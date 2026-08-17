@@ -1,0 +1,35 @@
+# Copy this file to sites/<org-or-site>.yaml and change only site-specific values.
+# Do not store Grafana tokens or other secrets here.
+site: example
+
+grafana:
+  org_id: 1
+  folder_uid: infrastructure-alerts
+  datasource_uid: prometheus-main
+
+defaults:
+  evaluation_interval_seconds: 60
+  query_window_seconds: 600
+  pending_for: 5m
+  no_data_state: NoData
+  exec_error_state: Error
+
+labels:
+  environment: production
+  site: example
+  team: platform
+
+groups:
+  - name: host-health
+    template: host-health.yaml.j2
+    uid_prefix: example-host
+    pending_for: 10m
+    cpu_threshold_percent: 85
+    cpu_severity: warning
+    cpu_query: >-
+      100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+    memory_threshold_percent: 90
+    memory_severity: critical
+    memory_query: >-
+      (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+

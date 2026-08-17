@@ -1,0 +1,62 @@
+parameters:
+  - name: site
+    displayName: Site configuration to deploy
+    type: string
+    default: example
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/**
+      - templates/**
+      - sites/**
+      - pyproject.toml
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: "3.10"
+    displayName: Use Python 3.10
+
+  - script: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+    displayName: Install dependencies
+
+  - script: ruff check .
+    displayName: Lint
+
+  - script: pytest -q
+    displayName: Test
+
+  - script: grafana-alerts validate "sites/${{ parameters.site }}.yaml"
+    displayName: Validate selected site
+
+  - script: grafana-alerts render "sites/${{ parameters.site }}.yaml" --output "$(Build.ArtifactStagingDirectory)/rendered"
+    displayName: Render selected site
+
+  - publish: $(Build.ArtifactStagingDirectory)/rendered
+    artifact: rendered-alerts
+    displayName: Publish rendered alerts
+
+  # Define GRAFANA_URL, secret GRAFANA_TOKEN, and DEPLOY_ENABLED=true in the
+  # Azure DevOps pipeline/variable group. Pull requests never deploy.
+  - script: grafana-alerts deploy "sites/${{ parameters.site }}.yaml"
+    displayName: Deploy selected site
+    condition: >-
+      and(succeeded(),
+          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+          eq(variables['DEPLOY_ENABLED'], 'true'))
+    env:
+      GRAFANA_URL: $(GRAFANA_URL)
+      GRAFANA_TOKEN: $(GRAFANA_TOKEN)
+
