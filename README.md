@@ -117,7 +117,7 @@ source .venv/bin/activate
 python -m pip install -e ".[dev]"
 
 grafana-alerts validate sites/example.yaml
-grafana-alerts render sites/example.yaml
+grafana-alerts render sites/example.yaml --output build
 ```
 
 For read-only comparison or deployment:
@@ -127,13 +127,16 @@ export GRAFANA_URL="https://grafana.example.com"
 export GRAFANA_TOKEN="..."
 
 grafana-alerts whoami
-grafana-alerts plan sites/site-a.yaml
-grafana-alerts deploy sites/site-a.yaml
+grafana-alerts plan sites/site-a.yaml --artifact-dir build --output plan
+grafana-alerts deploy sites/site-a.yaml --artifact-dir build
 ```
 
-`plan` performs only authenticated reads. `deploy` uses Grafana's create/update rule-group endpoint,
-which replaces the target group with the rendered group. This first version intentionally does not
-delete groups that have disappeared from Git.
+`render` writes deterministic rule-group JSON plus `build/<site>/manifest.json`. The manifest binds
+the site, org, folder, group filenames, and SHA-256 hashes. `plan` verifies that artifact and performs
+only authenticated reads; it reports `create`, `update`, or `no-change` and writes unified diffs for
+changed groups. `deploy` verifies the same manifest and hashes, then uses Grafana's create/update
+rule-group endpoint. It never re-renders templates and does not delete groups that disappeared from
+Git.
 
 ## Azure DevOps
 
@@ -143,10 +146,14 @@ Create the pipeline from `azure-pipelines.yml`, then define:
 |---|---:|---|
 | `GRAFANA_URL` | No | Base URL of the selected Grafana site |
 | `GRAFANA_TOKEN` | Yes | Org-scoped service-account token |
+| `PLAN_ENABLED` | No | Set to `true` to compare the artifact with live Grafana |
 | `DEPLOY_ENABLED` | No | Must equal `true` before the main-branch deploy step runs |
 
-Choose the site YAML with the pipeline's `site` parameter. PR runs lint, test, validation, and
-rendering but never deploy. A main-branch run deploys only when `DEPLOY_ENABLED=true`.
+Choose the site YAML with the pipeline's `site` parameter. The build stage runs lint, tests,
+validation, rendering, optional live planning, and publishes the rendered artifact. PRs never
+deploy. A main-branch run enters the `grafana-<site>` Azure DevOps environment only when
+`DEPLOY_ENABLED=true`; configure the production approval on that environment. The deployment job
+downloads and verifies the exact artifact produced by its build stage.
 
 For several organizations, use one environment/stage or variable group per organization so each
 token remains scoped to exactly one Grafana org. Do not use a single unrestricted admin token for
@@ -157,10 +164,10 @@ all sites.
 | Command | Behavior |
 |---|---|
 | `validate` | Strictly renders and validates every configured group |
-| `render` | Writes deterministic JSON payloads under `build/<site>/` |
+| `render` | Writes deterministic JSON and a SHA-256 manifest under `build/<site>/` |
 | `whoami` | Shows the identity returned by Grafana for the token |
-| `plan` | Reports whether each desired group would be created or updated |
-| `deploy` | Creates or replaces desired rule groups; performs no deletions |
+| `plan` | Produces create/update/no-change results and per-group semantic diffs |
+| `deploy` | Verifies and applies an exact rendered artifact; performs no deletions |
 
 ## API compatibility
 
@@ -171,8 +178,6 @@ App Platform adapter will not change templates or site files.
 
 ## Next milestones
 
-1. Replace the example expressions with exported, production-tested alert groups.
-2. Add interactive data source, metric, label, and PromQL query discovery using the authenticated
+1. Add interactive data source, metric, label, and PromQL query discovery using the authenticated
    Grafana identity and its existing permissions.
-3. Add a true semantic diff to `plan` and require an approval before production deployment.
-4. Add opt-in pruning with an explicit allowlist; keep deletion disabled by default.
+2. Add opt-in pruning with an explicit allowlist; keep deletion disabled by default.
