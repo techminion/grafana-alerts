@@ -1,0 +1,3636 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "cfltcv1qbhmo0c",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] JVM heap > 95%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(sum by(host_name, job) (jvm_memory_used_bytes{jvm_memory_type=\"heap\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\"} * 100)) / (sum by(host_name, job) (jvm_memory_limit_bytes{jvm_memory_type=\"heap\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\"}))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    95
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "JVM heap memory usage is {{ $value | printf \\\"%.1f\\\" }}% on zara-combine in __SITE_NAME__/__ENVIRONMENT__. Approaching memory limit, GC pressure may increase.\n\nhttps://o11y.dpworld.com/d/zara-core-prod/zara-core-observability?orgId=1&from=2026-06-04T13:52:35.315Z&to=2026-06-04T14:07:35.315Z&timezone=browser&var-DS_PROMETHEUS=afq2sc9yp1u68f&var-env=DP&var-site_name=ZV8&var-application=zara-combine-jdk17&var-route=$__all&var-repository=$__all&var-interval=5m&viewPanel=panel-49",
+        "summary": "JVM Heap Memory Usage High - Combine API (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "memory",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afltgwxexsb28d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] JVM CPU saturated",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 604800,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "jvm_cpu_recent_utilization_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\"} * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    70
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "JVM CPU utilization is {{ $value | printf \"%.1f\" }}% on {{ $labels.host_name }} {{ $labels.job }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 70% threshold. Immediate action required; application likely throttled, requests timing out.",
+        "summary": "JVM CPU Saturation Critical - zara-combine (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "cpu",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bflth1jgkary8d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] API 4xx spike",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(http_route) (rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\", http_response_status_code=~\"4..\"}[5m]))\n",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    25
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "High rate of 4xx client-error responses detected for {{ $labels.http_route }} on zara-combine in __SITE_NAME__/__ENVIRONMENT__.\n\nPossible causes:\n\n* authentication/authorization failures\n* invalid client requests\n* API contract mismatch\n* frontend deployment issues\n* missing resources/endpoints\n\nPossible impact:\n\n* elevated user-facing request failures\n* degraded application workflows\n* increased support incidents\n\nIMPORTANT:\nCurrent query uses raw 4xx request rate, not percentage-based error rate.",
+        "summary": "API 4xx Spike - zara-combine Service (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "api_errors",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "fflthqw6gn7y8e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] Critical-route latency regression -Login",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(\n  0.95,\n  sum by(le) (\n    rate(\n      http_server_request_duration_seconds_bucket{\n        env=\"__ENVIRONMENT__\",\n        site_name=\"__SITE_NAME__\",\n        job=~\"zara-combine-jdk17\",\n        http_route=\"/zodiac/core/api/v1/auth\"\n      }[5m]\n    )\n  )\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /zodiac/core/api/v1/auth on zara-combine in __SITE_NAME__/__ENVIRONMENT__ is {{ printf \"%.3f\" $values.A.Value }}s, exceeding the configured threshold.\n\nAuthentication API latency degradation detected.\n\nPossible causes:\n\n* authentication backend slowness\n* database latency\n* thread pool saturation\n* external identity-provider degradation\n* GC pauses\n\nPossible impact:\n\n* login delays\n* authentication timeouts\n* failed session establishment\n* degraded user experience",
+        "summary": "Critical-route latency regression (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afltiid4rfke8b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] __SITE_NAME__-Combine-Fast-Burn 5xx",
+      "condition": "E",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 900,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=\"/zodiac/core/.*\",\n    http_response_status_code=~\"5..\"\n  }[5m]))\n  /\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=\"/zodiac/core/.*\"\n  }[5m]))\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 3600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=\"/zodiac/core/.*\",\n    http_response_status_code=~\"5..\"\n  }[1h]))\n  /\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=\"/zodiac/core/.*\",\n  }[1h]))\n) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    10
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Error rate exceeding 10% over both 5m and 1h windows on /zodiac/core/.* in __SITE_NAME__/__ENVIRONMENT__. Current error rate: {{ $value | printf \"%.1f\" }}%. Immediate investigation required.",
+        "summary": "Fast Burn 5xx - zara-combine API (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "foundation"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfolw7u7ftm2of",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] Critcal endpoint latency degradation ",
+      "condition": "E",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(\n  0.95,\n  sum by(job, site_name, env, http_route, le) (\n    rate(\n      http_server_request_duration_seconds_bucket{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zara-combine-jdk17\",\n        http_route=~\".*attachments/batch-create.*|.*event-action-log.*|.*terminalperformancerpt.*|.*update-visit-state.*|.*apply-filter-search.*|.*page-details.*\"\n      }[5m]\n    )\n  )\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(job, site_name, env, http_route) (\n  rate(\n    http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zara-combine-jdk17\",\n      http_route=~\".*attachments/batch-create.*|.*event-action-log.*|.*terminalperformancerpt.*|.*update-visit-state.*|.*apply-filter-search.*|.*page-details.*\"\n    }[5m]\n  )\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    10
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.05,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for {{ $labels.http_route }} on zara-combine in __SITE_NAME__/__ENVIRONMENT__ is {{ printf \"%.3f\" $values.A.Value }}s, exceeding the configured threshold.\n\nThis endpoint is categorized as a reporting, batch-processing, or historically long-running API and is monitored separately from standard API latency alerts.\n\nPossible causes:\n• Database query degradation\n• Large result sets\n• Report generation delays\n• Downstream dependency latency\n• JVM GC pauses\n• resource contention\n\nPossible impact:\n• Slow report generation\n• Delayed batch processing\n• Increased user wait times",
+        "summary": "Special endpoint latency degradation - {{ $labels.http_route }}"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfltqkfovifwgc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] ZaraCoreAuthFailureSpike",
+      "condition": "D",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\", http_response_status_code=~\"401|403|404\", http_route=~\".*/api/v1/auth.*\"}[5m]) * 100)) / (sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\", http_route=~\".*/api/v1/auth.*\"}[5m])))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum(\n  increase(\n    http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zara-combine-jdk17\",\n      http_route=~\".*/api/v1/auth.*\"\n    }[5m]\n  )\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    25,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "query",
+            "hide": false,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    50,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$A && $C",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Elevated authentication failure rate detected on /api/v1/auth.\n\nAuth failure percentage (401/403 responses) exceeded the configured threshold for at least 3 minutes while request volume was above the minimum traffic threshold.\n\nCurrent failure rate: {{ printf \"%.2f\" $values.A.Value }}%\nDetected at: {{ .StartsAt }}\n\nPossible causes:\n• Invalid user credentials\n• Expired tokens or sessions\n• Authorization/role mapping issues\n• Authentication service degradation\n• Client-side configuration problems\n\nImpact:\nUsers may be unable to log in or access protected resources.",
+        "summary": "Auth failure spike detected on /api/v1/auth ({{ printf \"%.2f\" $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "critical",
+        "signal": "auth",
+        "site_name": "__SITE_NAME__",
+        "team": "foundation"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cflu5cyqe0hs0d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] ZaraCoreAuthFailureBurst",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by (http_route, env, site_name, job) (\n    rate(http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", \n      job=~\"zara-combine-jdk17\",\n      http_response_status_code=\"401|403|404\"\n    }[5m])\n  )\n)\n>\non (http_route, env, site_name, job)\n(\n  3 *\n  sum by (http_route, env, site_name, job) (\n    rate(http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", \n      job=~\"zara-combine-jdk17\",\n      http_response_status_code=\"401|403|404\"\n    }[1h] offset 5m)\n  ) + 0.1\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "hide": false,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "2m",
+      "annotations": {
+        "description": "Sudden surge in authentication failures detected.",
+        "summary": "Auth 401 burst detected"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "critical",
+        "signal": "auth",
+        "site_name": "__SITE_NAME__",
+        "team": "zara-core"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "f22b96c9-b273-5b7b-a3bd-f17f686fbe14",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE]  Zara Core Server Error Rate High",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum(\n    rate(http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zara-combine-jdk17\",\n      http_response_status_code=~\"5..\"\n    }[5m])\n  )\n/\n  sum(\n    rate(http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zara-combine-jdk17\"\n    }[5m])\n  )\n) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "query",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.2f\" }} req/s in {{ $labels.env }}/{{ $labels.site_name }}\nreturning {{ $labels.http_response_status_code }} for 3m+. Indicates uncaught exceptions\nin the controller/service layer. Check recent deploys and DB pool metrics.",
+        "summary": "5xx rate elevated on zara-combine ({{ $labels.http_response_status_code }})"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "env": "__ENVIRONMENT__",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "signal": "app-errors",
+        "site_name": "__SITE_NAME__",
+        "team": "zara-core"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "1d26a74e-6e96-51ef-a193-f32a4cab006c",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] ZaraCoreServerErrorBurst",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by (http_route, env, site_name, job) (\n    rate(http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", \n      job=~\"zara-combine-jdk17\",\n      http_response_status_code=~\"5..\"\n    }[5m])\n  )\n)\n>\non (http_route, env, site_name, job)\n(\n  3 *\n  sum by (http_route, env, site_name, job) (\n    rate(http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", \n      job=~\"zara-combine-jdk17\",\n      http_response_status_code=~\"5..\"\n    }[1h] offset 5m)\n  ) + 0.1\n)\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "2m",
+      "annotations": {
+        "description": "Sudden surge of server errors in {{ $labels.env }}/{{ $labels.site_name }}.\nCurrent 5m rate is >3× the 1h baseline. Likely real incident (bad deploy, DB outage, OOM).",
+        "summary": "5xx burst on zara-combine — 3× baseline"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "env": "__ENVIRONMENT__",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "critical",
+        "signal": "app-errors",
+        "site_name": "__SITE_NAME__",
+        "team": "zara-core"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "e4c514ee-6d9d-52d7-b7dd-42fefaed4810",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] ZaraCoreDbPoolPendingRequests",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "avg_over_time(\n  db_client_connections_pending_requests{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", \n    job=~\"zara-combine-jdk17\",\n  }[5m]\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "query",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.1f\" }} threads are queued for {{ $labels.pool_name }}\nin {{ $labels.env }}/{{ $labels.site_name }} (5m avg, sustained 5m+).\nPool is undersized or queries are slow. Check slow query log and pool max size.",
+        "summary": "DB pool zara-combine has threads waiting for a connection"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "channel": "msteams",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "signal": "db-pool",
+        "site_name": "__SITE_NAME__",
+        "team": "zara-core"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "b0b8a583-0133-50c3-87fb-c4f7327f31be",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] ZaraCoreApiSlowBurn5xx",
+      "condition": "E",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 3600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/core/.*\",\n    http_response_status_code=~\"5..\"\n  }[1h]))\n  /\n  clamp_min(\n    sum(rate(http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      http_route=~\"/zodiac/core/.*\"\n    }[1h])),\n    0.001\n  )\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 21600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/core/.*\",\n    http_response_status_code=~\"5..\"\n  }[6h]))\n  /\n  clamp_min(\n    sum(rate(http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      http_route=~\"/zodiac/core/.*\"\n    }[6h])),\n    0.001\n  )\n) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "30m",
+      "annotations": {
+        "description": "Sustained elevated 5xx error rate detected on zara-combine in __SITE_NAME__/__ENVIRONMENT__ across both short-term and long-term evaluation windows.\n\nCurrent 1h error rate and rolling 6h baseline both indicate persistent application instability.\n\nPossible causes:\n\ndeployment regression\ndependency instability\ndatabase failures\nthread pool exhaustion\ninfrastructure degradation\n\nPossible impact:\n\npersistent customer-facing failures\nelevated retry traffic\ncascading downstream impact",
+        "summary": "Slow-burn 5xx — zara-combine"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "channel": "msteams",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "signal": "app-errors",
+        "site_name": "__SITE_NAME__",
+        "team": "zara-core"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "f0b80c7e-d170-51fe-b8c7-6d020b5f7bad",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] ZaraCoreDbPoolAcquireSlow",
+      "condition": "WHEN",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "builder",
+            "expr": "sum by(host_name, job) (rate(db_client_connections_wait_time_milliseconds_sum{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\"}[5m])) / (sum by(host_name, job) (rate(db_client_connections_wait_time_milliseconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\"}[5m])))",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "WHEN",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    500
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "query",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "WHEN",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "3m",
+      "annotations": {
+        "description": "Average database connection acquisition latency is {{ $value | printf \"%.2f\" }}ms on zara-combine in __SITE_NAME__/__ENVIRONMENT__, exceeding the configured 500ms threshold.\n\nApplication threads are waiting excessively for database connections.\n\nPossible causes:\n\n- undersized connection pool\n- slow database queries\n- connection leaks\n- downstream DB saturation\n- long-running transactions\n\nPossible impact:\n\n- elevated API latency\n- request queueing\n- thread starvation\n- transaction timeouts",
+        "summary": "DB Pool Long Wait Time - zara-combine (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "db",
+        "channel": "msteams",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "signal": "db-pool",
+        "site_name": "__SITE_NAME__",
+        "team": "zara-core"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "3d37de3d-29e6-5ba5-863a-27fda5b2efd7",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] ZaraCoreDbPoolExhausted",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by (pool_name, env, site_name, job) (\n    db_client_connections_usage{state=\"used\",site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\"}\n  )\n  /\n  sum by (pool_name, env, site_name, job) (\n    db_client_connections_max{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\"}\n  )\n) >= 0.95\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "2m",
+      "annotations": {
+        "description": "Pool {{ $labels.pool_name }} in {{ $labels.env }}/{{ $labels.site_name }}\nis at >=95% capacity for 2m+. New requests are queueing or failing.\nImmediate impact on user-facing latency. Check for runaway queries, deadlocks,\nor a downstream stall holding connections.",
+        "summary": "DB pool '{{ $labels.pool_name }}' exhausted ({{ $value | humanizePercentage }} used)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "env": "__ENVIRONMENT__",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "critical",
+        "signal": "db-pool",
+        "site_name": "__SITE_NAME__",
+        "team": "zara-core"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffomsab4ap534b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] Container Memory Usage > 85%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by(container_name, host_name) (\n    container_memory_usage_total_bytes{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      container_name=\"zara-combine-jdk17\"\n    }\n  )\n/\n  sum by(container_name, host_name) (\n    container_memory_usage_limit_bytes{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      container_name=\"zara-combine-jdk17\"\n    }\n  )\n) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    85
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Container {{ $labels.container_name }} on {{ $labels.host_name }}\nis consuming {{ printf \"%.1f\" $value }}% of its configured memory limit.\n\nMemory utilization has exceeded the configured 85% threshold for at least 5 minutes.\n\nPossible causes:\n\n* JVM heap growth\n* memory leak\n* excessive cache growth\n* traffic spike\n* large payload processing\n* native/off-heap memory growth\n\nPossible impact:\n\n* increased GC activity\n* elevated API latency\n* reduced throughput\n* OutOfMemoryError\n* container restart or OOM kill\n\nRecommended checks:\n\n* verify JVM heap usage\n* review recent traffic patterns\n* inspect cache utilization\n* check GC pause metrics\n* review container restart events",
+        "summary": "Container memory utilization high - zara-combine (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "memory",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "p2",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfoqdyx880kjkf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] JVM long GC pauses",
+      "condition": "F",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 3600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.99, sum by(job, site_name, env, host_name, le) (rate(jvm_gc_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\", jvm_gc_name=~\"G1 Young Generation|G1 Old Generation\"}[15m])))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 3600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(job, site_name, host_name, env) (increase(jvm_gc_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\", jvm_gc_name=~\"G1 Young Generation|G1 Old Generation\"}[15m]))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "D"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1.2
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    500,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "F",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $E",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "F",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P99 Young Gen GC pause is {{ $value | printf \"%.3f\" }}s on zara-combine {{ $labels.host_name }} ({{ $labels.job }}) in __SITE_NAME__/__ENVIRONMENT__, exceeding the 2s threshold.\n\nLong JVM stop-the-world pauses detected. Application request-processing threads may be stalled due to:\n\n* excessive object allocation rate\n* memory pressure\n* inefficient heap sizing\n* promotion failures\n* high allocation churn\n\nPossible impact:\n\n* request latency spikes\n* thread starvation\n* API timeouts\n* throughput degradation\n* temporary service unresponsiveness",
+        "summary": "COMBINE 99th percentile GC pause time is high for job {{ $labels.job }}"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efp072hayosg0f",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] Container Memory Usage > 90%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by(container_name, host_name) (\n    container_memory_usage_total_bytes{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      container_name=\"zara-combine-jdk17\"\n    }\n  )\n/\n  sum by(container_name, host_name) (\n    container_memory_usage_limit_bytes{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      container_name=\"zara-combine-jdk17\"\n    }\n  )\n) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    90
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Container {{ $labels.container_name }} on {{ $labels.host_name }}\nis consuming {{ printf \"%.1f\" $value }}% of its configured memory limit.\n\nMemory utilization has exceeded the configured 90% threshold for at least 5 minutes.\n\nPossible causes:\n\n* JVM heap growth\n* memory leak\n* excessive cache growth\n* traffic spike\n* large payload processing\n* native/off-heap memory growth\n\nPossible impact:\n\n* increased GC activity\n* elevated API latency\n* reduced throughput\n* OutOfMemoryError\n* container restart or OOM kill\n\nRecommended checks:\n\n* verify JVM heap usage\n* review recent traffic patterns\n* inspect cache utilization\n* check GC pause metrics\n* review container restart events",
+        "summary": "Container memory utilization high - zara-combine (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "alert_type": "memory",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfoqcney3b01se",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] Frequent-container-restarts ",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 2592000,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "changes(max by(service, node, ip, port, site_name, env) (bos_service_up{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service=~\"combine\"})[7m:1m])",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    4
+                  ],
+                  "type": "gte"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "COMBINE has restarted {{ $value }} times in the last hour on {{ $labels.site_name }}/{{ $labels.env }}. Possible crash loop, OOM kill, or deployment issue.",
+        "summary": "Frequent restarts detected - COMBINE"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "42793c6a-8ea1-5628-958b-2c5fd5490378",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] ZaraCoreApiGoneSilent",
+      "condition": "E",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "builder",
+            "expr": "sum by(http_route) (increase(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/zodiac/core/.*\", http_route!~\"/index.jsp|/zodiac/\\\\*|/zodiac/core/\\\\*|/zodiac/core/\\\\*\\\\*|/zodiac/core/system/res-bundle-path|/zodiac/core/api/v1/config/{config-id:.+}\", job=~\"zara-combine-jdk17\"}[1h]))",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "builder",
+            "expr": "sum by(http_route) (increase(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/zodiac/core/.*\", http_route!~\"/index.jsp|/zodiac/\\\\*|/zodiac/core/\\\\*|/zodiac/core/\\\\*\\\\*|/zodiac/core/system/res-bundle-path|/zodiac/core/api/v1/config/{config-id:.+}\", job=~\"zara-combine-jdk17\"}[15m]))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    100
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    -1
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "3m",
+      "annotations": {
+        "description": "Route {{ $labels.http_route }} previously received more than 500 requests over the last 1 hours but has received no requests during the last 15 minutes.\n\nPossible causes:\n• Upstream application failure\n• Traffic routing issue\n• Load balancer misconfiguration\n• Authentication failure preventing requests\n• Client application outage\n\nPossible impact:\n• Business transactions no longer reaching the service\n• Missing integrations\n• Potential service unavailability",
+        "summary": "API gone silent in {{ $labels.env }}/{{ $labels.site_name }}"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "critical",
+        "signal": "availability",
+        "site_name": "__SITE_NAME__",
+        "team": "zara-core"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfltehunw45c0b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] Thread Starvation",
+      "condition": "E",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum(jvm_thread_count{\n    job=~\"zara-combine-jdk17\",\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    jvm_thread_state=\"runnable\"\n  })\n  /\n  sum(jvm_thread_count{\n    job=~\"zara-combine-jdk17\",\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\"\n  })\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum(\n    jvm_thread_count{\n      job=~\"zara-combine-jdk17\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      jvm_thread_state=\"blocked\"\n    }\n  ) OR vector(0)\n)\n/\nsum(\n  jvm_thread_count{\n    job=~\"zara-combine-jdk17\",\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\"\n  }\n)\n* 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "($A > 60) && ($B > 5)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Over 60% threads runnable and over 10% threads blocked on zara-combine in __SITE_NAME__/__ENVIRONMENT__. Risk of request timeouts and degraded throughput.",
+        "summary": "Thread starvation detected: {{ $labels.job }}"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "adfec885-f648-5463-a7df-10ec12b7141e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] ZaraCoreCacheHitRatioDropped",
+      "condition": "G",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by(cache_name) (\n    rate(cache_hit_count_total{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zara-combine-jdk17\"\n    }[5m])\n  )\n  /\n  clamp_min(\n    sum by(cache_name) (\n      rate(cache_hit_count_total{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zara-combine-jdk17\"\n      }[5m])\n    )\n    +\n    sum by(cache_name) (\n      rate(cache_miss_count_total{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zara-combine-jdk17\"\n      }[5m])\n    ),\n    0.001\n  )\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by(cache_name) (\n    rate(cache_hit_count_total{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zara-combine-jdk17\"\n    }[1h])\n  )\n  /\n  clamp_min(\n    sum by(cache_name) (\n      rate(cache_hit_count_total{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zara-combine-jdk17\"\n      }[1h])\n    )\n    +\n    sum by(cache_name) (\n      rate(cache_miss_count_total{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zara-combine-jdk17\"\n      }[1h])\n    ),\n    0.001\n  )\n) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(cache_name)(\n  rate(cache_hit_count_total{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    job=~\"zara-combine-jdk17\"\n  }[5m])\n)\n+\nsum by(cache_name)(\n  rate(cache_miss_count_total{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    job=~\"zara-combine-jdk17\"\n  }[5m])\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "E"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "(($B - $A) / $B) * 100",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    50,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "C",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "F",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.05,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "E",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "F",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "G",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$D && $F",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "G",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "Cache '{{ $labels.cache_name }}' in {{ $labels.env }}/{{ $labels.site_name }}\nhas degraded by {{ printf \"%.2f\" $values.C.Value }}% compared to its 6h baseline hit ratio.\n\nPossible causes:\n- cache flush/restart\n- workload/query-pattern shift\n- undersized cache\n- backend latency increase\n- elevated eviction rate\n\nExpect increased downstream DB traffic.",
+        "summary": "Cache '{{ $labels.cache_name }}' hit ratio dropped >50% from baseline"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "info",
+        "signal": "cache",
+        "site_name": "__SITE_NAME__",
+        "team": "zara-core"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffmc9r9npihvka",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] API request-rate drop",
+      "condition": "H",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 86400,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(http_route) (\n  rate(\n    http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zara-combine-jdk17\",\n      http_route=~\"/zodiac/core/.*\",\n      http_route!~\"/index.jsp|/zodiac/\\\\*|/zodiac/core/\\\\*|/zodiac/core/\\\\*\\\\*|/zodiac/core/system/res-bundle-path|/zodiac/core/api/v1/config/{config-id:.+}\"\n    }[5m]\n  )\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "avg_over_time(\n  sum by(http_route) (\n    rate(\n      http_server_request_duration_seconds_count{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zara-combine-jdk17\",\n        http_route=~\"/zodiac/core/.*\",\n        http_route!~\"/index.jsp|/zodiac/\\\\*|/zodiac/core/\\\\*|/zodiac/core/\\\\*\\\\*|/zodiac/core/system/res-bundle-path|/zodiac/core/api/v1/config/{config-id:.+}\"\n      }[5m]\n    )\n  )[1h:5m]\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "avg_over_time(\n  sum by(http_route) (\n    rate(\n      http_server_request_duration_seconds_count{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zara-combine-jdk17\",\n        http_route=~\"/zodiac/core/.*\",\n        http_route!~\"/index.jsp|/zodiac/\\\\*|/zodiac/core/\\\\*|/zodiac/core/\\\\*\\\\*|/zodiac/core/system/res-bundle-path|/zodiac/core/api/v1/config/{config-id:.+}\"\n      }[5m]\n    )\n  )[1h:5m]\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "E"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "($A / $B) * 100",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    -1
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "C",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "G",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "E",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "G",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "H",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$D && $G",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "H",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Request rate for {{ $labels.http_route }} on zara-combine in __SITE_NAME__/__ENVIRONMENT__ has dropped below 20% of its 1h rolling baseline.\n\nHistorically active traffic has significantly decreased, indicating possible upstream routing failure, ingress issue, authentication failure, frontend disconnect, deployment regression, or service degradation.\n\nPossible impact:\n\n- partial service outage\n- customer request failures\n- traffic blackholing\n- API availability degradation",
+        "summary": "API Request Rate Drop - {{ $labels.http_route }} - Zara-Comobine (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfltexn6zn11cc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] Container down",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 10800,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by(service, node, ip, port, site_name, env) (bos_service_up{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service=~\"combine\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "2m",
+      "annotations": {
+        "description": "Health check for zara-combine instance {{ $labels.node }} ({{ $labels.ip }}:{{ $labels.port }}) in {{ $labels.site_name }}/{{ $labels.env }} is failing.\n\nThe service has reported an unhealthy status or is no longer responding to health checks.\n\nPossible causes:\n• Container stopped or crashed\n• JVM process terminated\n• Application startup failure\n• Health endpoint unavailable\n• Network connectivity issue\n• Host resource exhaustion (CPU/Memory/Disk)\n\nPossible impact:\n• Reduced service capacity\n• Increased load on remaining instances\n• Request failures if redundancy is insufficient\n\nRecommended actions:\n• Verify container and JVM status\n• Review application logs\n• Check recent deployments or configuration changes\n• Verify health endpoint accessibility\n• Check host resource utilization",
+        "summary": "Zara-Combine container down on __SITE_NAME__/__ENVIRONMENT__"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "alert_type": "cpu",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afltgc6mx3ta8a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] JVM heap > 85% ",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "builder",
+            "expr": "(sum(jvm_memory_used_bytes{jvm_memory_type=\"heap\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\"}) * 100) / (sum(jvm_memory_limit_bytes{jvm_memory_type=\"heap\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\"}))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    85
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "JVM heap memory usage is {{ $value | printf \"%.1f\" }}% on zara-combine {{ $labels.host_name }} {{ $labels.job }} in __SITE_NAME__/__ENVIRONMENT__. Approaching memory limit, GC pressure may increase.",
+        "summary": "Warning - JVM Heap Memory Usage High - zara-api API (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "memory",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfltglp1wirk0c",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][COMBINE] API route p95 latency",
+      "condition": "F",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(job, site_name, env, http_route, le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\", http_route!=\"\",http_route!~\"/zodiac/core/api/v1/attachments/batch-create|/zodiac/core/api/v1/event-action-log|/zodiac/core/api/v1/vessel-visits/billings/terminalperformancerpt|/zodiac/core/api/v1/vessel-visits/\\\\{code\\\\}/update-visit-state|/zodiac/core/event-action-log/apply-filter-search|/zodiac/core/interception-log/apply-filter-search|/zodiac/core/interception-log/page-details\",http_route!~\"/index.jsp|/zodiac/\\\\*|/zodiac/core/\\\\*|/zodiac/core/\\\\*\\\\*\"\n}[5m])))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(job, site_name, env, http_route) (rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-combine-jdk17\", http_route!=\"\",http_route!~\"/zodiac/core/api/v1/attachments/batch-create|/zodiac/core/api/v1/event-action-log|/zodiac/core/api/v1/vessel-visits/billings/terminalperformancerpt|/zodiac/core/api/v1/vessel-visits/\\\\{code\\\\}/update-visit-state|/zodiac/core/event-action-log/apply-filter-search|/zodiac/core/interception-log/apply-filter-search|/zodiac/core/interception-log/page-details\",http_route!~\"/index.jsp|/zodiac/\\\\*|/zodiac/core/\\\\*|/zodiac/core/\\\\*\\\\*\"\n}[5m]))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    5
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "F",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "E",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "F",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for {{ $labels.http_route }} on zara-combine in __SITE_NAME__/__ENVIRONMENT__ is {{ printf \"%.3f\" $values.A.Value }}s, exceeding the configured 2s threshold.\n\nPossible causes:\n• Database latency\n• Downstream dependency slowness\n• JVM GC pauses\n• Thread pool saturation\n• Lock contention\n• Infrastructure degradation\n\nPossible impact:\n• Slow responses for this endpoint\n• Increased timeout risk\n• Elevated retry traffic",
+        "summary": "High P95 latency detected for {{ $labels.http_route }}"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Combine-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

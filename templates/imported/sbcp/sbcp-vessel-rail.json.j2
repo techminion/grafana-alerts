@@ -1,0 +1,1679 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "eflyg0isvy8sgd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel&RailVisit-Critical-route latency regression - GetOperationData",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/zodiac/core/api/v1/vessel-visits/{vesselVisitCode}/get-operation-data\"}[2m])))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for \"/zodiac/core/api/v1/vessel-visits/{vesselVisitCode}/get-operation-data\"  is {{ $values.A.Value }}s on __SITE_NAME__/__ENVIRONMENT__, exceeding 3s threshold.",
+        "summary": "Critical P95 Latency - GetOperationData"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflq8tlnw24n4d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-AMQ Zombie Consumer",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "rate(activemq_message_enqueued_messages_total{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"__SITE_NAME__.__ENVIRONMENT__.Event.Raw.VesselVisit|__SITE_NAME__.__ENVIRONMENT__.Event.Raw.Rail Visit\"}[5m]) - (rate(activemq_message_dequeued_messages_total{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"__SITE_NAME__.__ENVIRONMENT__.Event.Raw.VesselVisit|__SITE_NAME__.__ENVIRONMENT__.Event.Raw.Rail Visit\"}[5m]))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "activemq_consumer_count_consumers{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\",destination=~\"__SITE_NAME__.__ENVIRONMENT__.Event.Raw.VesselVisit|__SITE_NAME__.__ENVIRONMENT__.Event.Raw.Rail Visit\"}",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Queue: {{ $labels.destination }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}",
+        "summary": "Potential AMQ zombie consumer detected for {{ $labels.destination }} (Delta={{ $values.C.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflxph3cgjbb4e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-ActiveMQ queue depth",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "sum by(site_name, env, destination) (activemq_message_current_messages{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"__SITE_NAME__.__ENVIRONMENT__.Event.Raw.VesselVisit|__SITE_NAME__.__ENVIRONMENT__.Event.Raw.Rail Visit\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    100,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Site: {{ $labels.site_name }}\nEnv: {{ $labels.env }}\nQueue: {{ $labels.destination }}\n\nMetric:\n\nName: ActiveMQ Queue Depth (Current Messages)\nCondition: > 100 messages pending in VesselVisit queue\n\nImpact:\nA growing backlog in queues indicates that message consumption is slower than production. This will lead to delayed consistency between BOS and OPS, as OPS relies on the events from these queues from sync purpose.\n\nStatus:\n\nQueue Backlog: HIGH\nSeverity: WARNING (CRITICAL if continuously increasing)",
+        "summary": "High message backlog detected in VesselVisit queue {{ $labels.destination }} (queue depth > 100)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "aflxqfm51uvi8e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel - Visit API overall p95 latency",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "histogram_quantile(0.95, sum by(le, http_route, env, site_name) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/zodiac/core/api/v1/vessels/.*|/zodiac/core/api/v1/vessel-services/.*|/zodiac/core/api/v1/vessel-visits/.*|/zodiac/core/ext-api/v1/vessel-visits/.*\"}[5m])))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    5
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API Route: {{ $labels.http_route }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nLatency (P95):\n- Value: {{ $values.A.Value }} sec\n- Threshold: > 5 sec\n\nCalculation:\nhistogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket[2m]))\n\nStatus:\n- High Latency: {{ $values.A.Value }} sec (alert fires only when > 5 sec)",
+        "summary": "High P95 latency detected for {{ $labels.http_route }} (P95={{ $values.A.Value }}s)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dflxs2kmjcuf4a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel&Rail-ActiveMQ consumer count",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "sum by(site_name, env, destination) (activemq_consumer_count_consumers{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"__SITE_NAME__.__ENVIRONMENT__.Event.Raw.VesselVisit|__SITE_NAME__.__ENVIRONMENT__.Event.Raw.Rail Visit\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1,
+                    0
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Queue: {{ $labels.destination }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nConsumer Status:\n- Active Consumers: {{ $values.A.Value }}\n- Threshold: < 1",
+        "summary": "ActiveMQ consumer missing for queue {{ $labels.destination }}"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bflxsroh06qkge",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel & Rail -API 4xx spike",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "sum by(job, env, site_name, http_route) (rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_response_status_code=~\"4..\", http_route=~\"/zodiac/core/api/v1/vessels/.*|/zodiac/core/api/v1/vessel-services/.*|/zodiac/core/api/v1/vessel-visits/.*|/zodiac/core/ext-api/v1/vessel-visits/.*|/zodiac/core/api/v1/crane-activity/interception/.*\", job=~\"zara-combine-jdk17\"}[5m]))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.1,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\nAPI: {{$labels.http_route}}\n\n4xx Error Rate:\n- Value: {{ $values.A.Value }} req/sec\n- Threshold: > 0.1 req/sec\n\nScope:\n- HTTP status: 4xx\n- Service: {{ $labels.job }}",
+        "summary": "4xx error spike detected for {{ $labels.http_route }} (Rate={{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflxu7gg6zchsd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel&Rail-Fast-Burn 5xx",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "sum by(job, http_route, env, site_name) (rate(http_server_request_duration_seconds_count{env=\"__ENVIRONMENT__\", site_name=\"__SITE_NAME__\", http_response_status_code=~\"5..\", http_route=~\"/zodiac/core/api/v1/vessels/.*|/zodiac/core/api/v1/vessel-services/.*|/zodiac/core/api/v1/vessel-visits/.*|/zodiac/core/ext-api/v1/vessel-visits/.*|/zodiac/core/api/v1/crane-activity/interception/.*\", job=\"zara-combine-jdk17\"}[5m]))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.1
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\n5xx Errors:\n- Error Rate (A): {{ $values.A.Value }} req/sec\n- Threshold: > 0.5 req/sec\n\nStatus:\n-- High Latency: {{ $values.A.Value }} req/sec (alert fires only when > 0.5 req/sec)",
+        "summary": "Fast-burn 5xx spike detected for {{ $labels.job }} (A={{ $values.A.Value }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dflxwbe019dz4a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel & Rail -API Gone Silent",
+      "condition": "A",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "(sum by(env, site_name, job) (rate(http_server_request_duration_seconds_count{job=~\"zara-combine-jdk17\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/zodiac/core/api/v1/vessels/.*|/zodiac/core/api/v1/vessel-services/.*|/zodiac/core/api/v1/vessel-visits/.*|/zodiac/core/ext-api/v1/vessel-visits/.*|/zodiac/core/api/v1/crane-activity/interception/.*\"}[10m]) == 0)) and (sum by(env, site_name, job) (rate(http_server_request_duration_seconds_count{job=~\"zara-combine-jdk17\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/zodiac/core/api/v1/vessels/.*|/zodiac/core/api/v1/vessel-services/.*|/zodiac/core/api/v1/vessel-visits/.*|/zodiac/core/ext-api/v1/vessel-visits/.*|/zodiac/core/api/v1/crane-activity/interception/.*\"}[1h]) > 0))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "classic_conditions"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n\nName: HTTP Request Rate\nCurrent: < 0.01 requests/sec (last 10 min)\nBaseline: > 0 (previous 1 hour offset)\n\nImpact:\nSudden drop to near-zero traffic indicates potential service outage, routing failure, upstream dependency breakdown, or deployment misconfiguration. This can result in complete API inaccessibility .\nStatus:\nAPI Silence Risk: true",
+        "summary": "API silence detected for {{ $labels.job }} (request rate < 0.01 for 10m, previously active)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dflxwmleqf6dcc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel&Rail-Slow-Burn 5xx",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(job, http_route, env, site_name) (rate(http_server_request_duration_seconds_count{env=\"__ENVIRONMENT__\", site_name=\"__SITE_NAME__\", job=~\"zara-combine-jdk17\", http_response_status_code=~\"5..\", http_route=~\"/zodiac/core/api/v1/vessels/.*|/zodiac/core/api/v1/vessel-services/.*|/zodiac/core/api/v1/vessel-visits/.*|/zodiac/core/ext-api/v1/vessel-visits/.*|/zodiac/core/api/v1/crane-activity/interception/.*\"}[30m]))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.2
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\n\n5xx errors accumulating over time:\n- Rate: {{ $values.A.Value }}\n- Window: 30m\n\nThis indicates sustained degradation rather than sudden failure.",
+        "summary": "Slow burn 5xx detected for {{ $labels.job }} (rate={{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "aflyfncrfngu8f",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-__SITE_NAME__ - Vessel Visit - Critical Route Regression - Vessel Visit GET",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95,sum(rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/zodiac/core/api/v1/vessel-visits/{code}\"}[5m])) by (le))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /zodiac/core/api/v1/vessel-visits/{code} is {{ $values.A.Value }}s on __SITE_NAME__/__ENVIRONMENT__, exceeding 5s threshold. Immediate investigation required possible DB slowness, GC pressure, or resource exhaustion.",
+        "summary": "Critical P95 Latency - Vessel Visit GET (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afopfiv0jx2wwf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] Vessel and Rail Code Extension",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (code_extension_name) (\n    increase(code_extension_name_milliseconds_sum{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      code_extension_name!=\"\",\n      code_extension_name=~\"VESSEL_VISIT_DETAIL|VESSEL_VISIT_RECORD_EVENT|VESSEL_VISIT_BATCH_RECORD_EVENT|VESSEL_VISIT_OPERATOR_ADD|VESSEL_VISIT_OPERATOR_DELETE|VESSEL_VISIT_OPERATOR_UPDATE|VESSEL_VISIT_PORT_ROTATION_ADD|VESSEL_VISIT_PORT_ROTATION_DELETE|VESSEL_VISIT_PORT_ROTATION_UPDATE|GET_VESSEL_VISIT_DETAILS|VESSEL_VISIT_ATTACHMENT_UPLOAD|VESSEL_VISIT_STATE_CHANGE|CHECK_VESSEL_VISIT_VALID|VESSEL_VISIT_STATE_CHANGE_NEW|VESSEL_VISIT_UPDATE\"\n    }[5m])\n  )\n  /\n  sum by (code_extension_name) (\n    increase(code_extension_name_milliseconds_count{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      code_extension_name!=\"\",\n      code_extension_name=~\"VESSEL_VISIT_DETAIL|VESSEL_VISIT_RECORD_EVENT|VESSEL_VISIT_BATCH_RECORD_EVENT|VESSEL_VISIT_OPERATOR_ADD|VESSEL_VISIT_OPERATOR_DELETE|VESSEL_VISIT_OPERATOR_UPDATE|VESSEL_VISIT_PORT_ROTATION_ADD|VESSEL_VISIT_PORT_ROTATION_DELETE|VESSEL_VISIT_PORT_ROTATION_UPDATE|GET_VESSEL_VISIT_DETAILS|VESSEL_VISIT_ATTACHMENT_UPLOAD|VESSEL_VISIT_STATE_CHANGE|CHECK_VESSEL_VISIT_VALID|VESSEL_VISIT_STATE_CHANGE_NEW|VESSEL_VISIT_UPDATE\"\n    }[5m])\n  )",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2000
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Average latency for code extension {{ $labels.code_extension_name }} has exceeded the configured threshold.\n\nCurrent average latency: {{ $values.A.Value | printf \"%.0f\" }} ms\n\nElevated code extension execution times may increase Invoke Agent and API response times. Please investigate extension logic, database queries, downstream dependencies, and recent application changes.\n\nThreshold: 2000 ms\nCurrent Value: {{ $values.A.Value | printf \"%.0f\" }} ms",
+        "summary": "Average Code Extension Latency High - {{ $labels.code_extension_name }}"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "aflyg0m8afnr4f",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-__SITE_NAME__ - Vessel Visit EXT - Critical Route Regression - Vessel Visit GET",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95,sum(rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/zodiac/core/ext-api/v1/vessel-visits/{vesselVisitCode}\"}[5m])) by (le))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /zodiac/core/ext-api/v1/vessel-visits/{vesselVisitCode} is {{ $values.A.Value }}s on __SITE_NAME__/__ENVIRONMENT__, exceeding 3s threshold. Immediate investigation required possible DB slowness, GC pressure, or resource exhaustion.",
+        "summary": "Critical P95 Latency - Vessel Visit GET EXT (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bflyga0ys8hs0e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-__SITE_NAME__ - Vessel Visit Create - Critical Route Regression",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95,sum(rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/zodiac/core/api/v1/vessel-visits/create\"}[5m])) by (le))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /zodiac/core/api/v1/vessel-visits/create is {{ $values.A.Value }} s on __SITE_NAME__/__ENVIRONMENT__, exceeding 3s threshold. Immediate investigation required possible DB slowness, GC pressure, or resource exhaustion.",
+        "summary": "Critical P95 Latency - Vessel Visit Create (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflyga4up1r0gc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel&RailVisit-Critical-route latency regression - UpdateVesselVisit",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/zodiac/core/api/v1/vessel-visits/update\"}[2m])))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for \"/zodiac/core/api/v1/vessel-visits/update\"  is {{ $values.A.Value }} on __SITE_NAME__/__ENVIRONMENT__, exceeding 3s threshold.",
+        "summary": "Critical P95 Latency - UpdateVesselVisit"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bflyghwl4ow00c",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel&RailVisit-Critical-route latency regression - UpdateVisitState",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/zodiac/core/api/v1/vessel-visits/{code}/update-visit-state\"}[2m])))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for \"/zodiac/core/api/v1/vessel-visits/{code}/update-visit-state\"  is {{ $values.A.Value }} s on __SITE_NAME__/__ENVIRONMENT__, exceeding 3s threshold.",
+        "summary": "Critical P95 Latency - UpdateVisitState"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflygsqaww000a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel&RailVisit-Critical-route latency regression - Crane Activity ApplyChanges",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/zodiac/core/api/v1/crane-activity/interception/apply-changes\"}[5m])))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for \"/zodiac/core/api/v1/crane-activity/interception/apply-changes\"  is {{ $values.A.Value }}s on __SITE_NAME__/__ENVIRONMENT__, exceeding 3s threshold.",
+        "summary": "Critical P95 Latency - Crane Activity Save"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dflyh115gk64ga",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel&RailVisit-Critical-route latency regression - Enrichment Api",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/zodiac/core/api/v1/vessel-visit-events/raw-enrich\"}[2m])))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for \"/zodiac/core/api/v1/vessel-visit-events/raw-enrich\"  is {{ $values.A.Value }}s on __SITE_NAME__/__ENVIRONMENT__, exceeding 3s threshold, can result in slower event generation and eventually slower sync between BOS and OPS.",
+        "summary": "Critical P95 Latency - RawEnrichmentAPI"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "aflyh62nvxts0d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-Vessel&RailVisit-Critical-route latency regression - Crane Activity GenerateObject",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/zodiac/core/api/v1/crane-activity/interception/generate-object\"}[5m])))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for \"/zodiac/core/api/v1/crane-activity/interception/generate-object\"  is {{ $value | printf \\\"%.3f\\\" }}s on __SITE_NAME__/__ENVIRONMENT__, exceeding 3s threshold.",
+        "summary": "Critical P95 Latency - Crane Activity Create Object"
+      },
+      "labels": {
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfm0gkon8ge80e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]-ActiveMQ Internal queue delay high",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "activemq_message_wait_time_avg_milliseconds{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"__SITE_NAME__.__ENVIRONMENT__.Event.Raw.VesselVisit|__SITE_NAME__.__ENVIRONMENT__.Event.Raw.Rail Visit\"}",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    150
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Average message wait time is {{ $values.A.Value }}ms on {{ $labels.destination }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 150ms threshold. Consumers may be slow or overloaded.",
+        "summary": "AMQ Queue Delay High"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Vessel & Rail",
+        "service": "activemq",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

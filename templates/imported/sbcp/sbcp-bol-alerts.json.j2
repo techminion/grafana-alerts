@@ -1,0 +1,5107 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "eca59eb3-b343-5991-93ac-00350be26883",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]Api5xxAll",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(http_route, http_request_method, host_name) (\n  increase(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol.*\",\n    http_response_status_code=~\"5..\"\n  }[10m])\n) > 2\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} 5xx responses on {{ $labels.http_route }} ({{ $labels.http_request_method }}) in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. BOL requests are failing server-side - check BolWebService / CANDI / core downstream calls and DB errors.",
+        "summary": "5xx Errors - BOL APIs (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "8b8cd8fe-a6ec-5652-b41f-7d92104c03b0",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ApiLatencySubmitManifest",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "histogram_quantile(0.95,\n  sum by(le, http_route, host_name) (\n    rate(http_server_request_duration_seconds_bucket{\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n      http_route=~\"/zodiac/unit-api/api/v1/bol/(submitManifest|create-bill-of-lading)\"\n    }[5m])\n  )\n) > 5\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for {{ $labels.http_route }} is {{ $value | printf \"%.3f\" }}s on {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 5s. Manifest submission does batch validation + queue publish - check DB slowness, equipment pre-validation queries and the CANDI register-batch call.",
+        "summary": "Critical P95 Latency - BOL Submit Manifest (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "7a50eb56-a1e5-5090-8f70-3572f8537a2c",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ApiLatencyWriteOps",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "histogram_quantile(0.95,\n  sum by(le, http_route, host_name) (\n    rate(http_server_request_duration_seconds_bucket{\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n      http_route=~\"/zodiac/unit-api/api/v1/bol/(create|update|delete)\"\n    }[5m])\n  )\n) > 2\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for {{ $labels.http_route }} is {{ $value | printf \"%.3f\" }}s on {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 2s. Possible DB slowness, lock contention on BOL tables, GC pressure or slow core lookups.",
+        "summary": "Critical P95 Latency - BOL Write APIs (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "038b35dd-2541-53bc-a45b-9e332737b465",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ApiLatencyReadOps",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "histogram_quantile(0.95,\n  sum by(le, http_route, host_name) (\n    rate(http_server_request_duration_seconds_bucket{\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n      http_route=~\"/zodiac/unit-api/api/v1/bol(|/equipment|/equipment-bol|/non-associated-bol-list/\\\\{unitFacCycleKey\\\\}|/apply-hold-codes)\"\n    }[5m])\n  )\n) > 2\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for {{ $labels.http_route }} is {{ $value | printf \"%.3f\" }}s on {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 2s. BOL/equipment lookups are slow - check report-view queries (UNIT_FAC_CYCLE, EQP_EQUIPMENT) and DB indexes.",
+        "summary": "Critical P95 Latency - BOL Read APIs (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "96bf03f4-a38a-5ed1-9dbb-103f6c4f5702",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ApiLatencyAssociateHoldEdi",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "histogram_quantile(0.95,\n  sum by(le, http_route, host_name) (\n    rate(http_server_request_duration_seconds_bucket{\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n      http_route=~\"/zodiac/unit-api/api/v1/bol/((associate|disassociate|update)/(unit|commodity)|applyReleaseHold|deleteHold|edi310)\"\n    }[5m])\n  )\n) > 3\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for {{ $labels.http_route }} is {{ $value | printf \"%.3f\" }}s on {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 3s. These routes fan out to UNIT batch APIs and JMS publishes - check downstream unit-api and broker latency.",
+        "summary": "Critical P95 Latency - BOL Associate/Hold/EDI APIs (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ba4c0d61-9d79-5591-9397-9c78347bf71a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AmqQueueDepthBackgroundTask",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(destination, host_name) (\n  activemq_message_current_messages{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    destination=\"BOL.BACKGROUND.TASK.PROCESS.QUEUE\"}\n) > 50\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Host {{ $labels.host_name }} has {{ $value | printf \"%.0f\" }} messages pending on {{ $labels.destination }} for more than 5 minutes. BOL manifest background tasks are backing up - check event-action nodes 9-12 and SubmitManifestBolProcessor throughput.",
+        "summary": "High message count on {{ $labels.destination }}"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "e238692a-3639-5aa4-a90f-7255688d3eed",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AmqQueueDepthUnitAssociation",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(destination, host_name) (\n  activemq_message_current_messages{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=\"BOL.UNIT.QUEUE\"}\n) > 50\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Host {{ $labels.host_name }} has {{ $value | printf \"%.0f\" }} messages pending on {{ $labels.destination }} for more than 5 minutes. Unit-to-BOL association is lagging - units will show stale BOL linkage.",
+        "summary": "High message count on {{ $labels.destination }}"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "a63dba77-3ae4-5b5a-8eda-5e04c331b2e5",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AmqQueueDepthUnitDisassociation",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(destination, host_name) (\n  activemq_message_current_messages{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    destination=\"BOL.UNIT.DISASSOCIATION.PROCESS.QUEUE\"}\n) > 50\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Host {{ $labels.host_name }} has {{ $value | printf \"%.0f\" }} messages pending on {{ $labels.destination }} for more than 5 minutes. Unit-BOL disassociation (incl. UNIT_TERMINATE) is backing up.",
+        "summary": "High message count on {{ $labels.destination }}"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "fd729b49-0646-5ed0-9287-1a7fb6d96e7b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AmqQueueDepthUnitEvent",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(destination, host_name) (\n  activemq_message_current_messages{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    destination=\"BOL.UNIT.EVENT.PROCESS.QUEUE\"}\n) > 50\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Host {{ $labels.host_name }} has {{ $value | printf \"%.0f\" }} messages pending on {{ $labels.destination }} for more than 5 minutes. BOL-unit event sync is lagging - BOL side may not reflect unit events.",
+        "summary": "High message count on {{ $labels.destination }}"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "7cbbad3b-1289-5233-9574-ad2bb7f93718",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AmqQueueDepthBackgroundTaskDataUpdate",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(destination, host_name) (\n  activemq_message_current_messages{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    destination=\"BACKGROUND.TASK.DATA.UPDATE.QUEUE\"}\n) > 50\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Host {{ $labels.host_name }} has {{ $value | printf \"%.0f\" }} messages pending on {{ $labels.destination }} for more than 5 minutes. BOL batch-task status updates (BBTD) are not being consumed - manifest jobs will look stuck to the caller.",
+        "summary": "High message count on {{ $labels.destination }}"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "7c0ec049-c054-5fcf-9e12-62697d4b9369",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AmqDlqDepth",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(destination, host_name) (\n  activemq_message_current_messages{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    destination=~\"ActiveMQ\\\\.DLQ\\\\.Queue\\\\.(BOL|BACKGROUND)\\\\..*\"}\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Host {{ $labels.host_name }} has {{ $value | printf \"%.0f\" }} messages parked on {{ $labels.destination }} for more than 5 minutes. BOL messages have been dead-lettered - data loss risk, they need manual replay.",
+        "summary": "DLQ High message count on {{ $labels.destination }}"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bf5e7068-ecf6-5c4a-b7a4-59d0d600f1f8",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]Api5xxSubmitManifest",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(http_route, host_name) (\n  increase(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol/(submitManifest|create-bill-of-lading)\",\n    http_response_status_code=~\"5..\"\n  }[10m])\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} 5xx responses on {{ $labels.http_route }} in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Manifest submission is the entry point of the BOL batch flow - failures here mean manifests never reach BOL.BACKGROUND.TASK.PROCESS.QUEUE / CANDI.",
+        "summary": "5xx Errors - BOL Submit Manifest (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "a2aa352f-7fdf-54ba-83d8-32e0c26791cb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AmqNoConsumers",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(destination, host_name) (\n  activemq_consumer_count_consumers{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"BOL\\\\..*\"}\n) < 1\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "Queue {{ $labels.destination }} | {{ $labels.host_name }} has no active consumers on __SITE_NAME__/__ENVIRONMENT__. BOL listeners are registered only on event-action nodes (9,10,11,12) when EVENT_ACTION_LISTENER_ENABLED=true - check those containers. Messages will accumulate until consumers reconnect.",
+        "summary": "AMQ No Consumers - BOL Queues (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "jvm_down",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "05f0734c-edc4-5cbb-8c39-c88b0a2a4e04",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AmqDegradedConsumer",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  sum by(destination, host_name) (\n    rate(activemq_message_enqueued_messages_total{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n      destination=~\"BOL\\\\..*\"}[5m])\n  )\n  -\n  sum by(destination, host_name) (\n    rate(activemq_message_dequeued_messages_total{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n      destination=~\"BOL\\\\..*\"}[5m])\n  )\n) > 5\nand\nsum by(destination, host_name) (\n  activemq_consumer_count_consumers{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"BOL\\\\..*\"}\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Queue {{ $labels.destination }} on {{ $labels.host_name }} has active consumers but the dequeue rate is lagging the enqueue rate by {{ $value | printf \"%.1f\" }} msg/s. BOL processors may be stalled on DB, CANDI or unit-api calls.",
+        "summary": "AMQ Degraded Consumer - BOL Queues (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "a02c4688-7097-5b71-9751-4da966ac5a57",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AmqQueueDelayHigh",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "max by(destination, host_name) (\n  activemq_message_wait_time_avg_milliseconds{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    destination=~\"BOL\\\\..*\"}\n) > 3000\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Average message wait time is {{ $value | printf \"%.0f\" }}ms on {{ $labels.host_name }} {{ $labels.destination }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 3s. BOL consumers are slow or overloaded.",
+        "summary": "AMQ Queue Delay High - BOL Queues (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "service": "activemq",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "1d021877-880c-5920-99b2-e2563d1fd3a1",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ExecutorThreadStarvation",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "min_over_time(\n  (\n    executor_active_threads{env=\"__ENVIRONMENT__\", site_name=\"__SITE_NAME__\",\n      job=~\"zdc-microservice-unit-api.*\", name=\"bolExecutorService\"}\n    /\n    executor_pool_core_threads{env=\"__ENVIRONMENT__\", site_name=\"__SITE_NAME__\",\n      job=~\"zdc-microservice-unit-api.*\", name=\"bolExecutorService\"}\n  )[5m:15s]\n) > 0.85\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "3m",
+      "annotations": {
+        "description": "BOL executor pool '{{ $labels.name }}' on {{ $labels.job }} / {{ $labels.host_name }} has had {{ $value | humanizePercentage }} of its core threads continuously busy for 5m. Async BOL work (manifest dispatch, hold apply, logging) is queueing instead of executing. Core pool is executor.thread-pool-count/2 (default 5) - check downstream latency and executor_queued_tasks.",
+        "summary": "BOL executor saturated on {{ $labels.job }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "c66bf151-5e00-52bf-a5b3-3bb227bb4679",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ExecutorQueueBacklog",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "max by(job, host_name, name) (\n  executor_queued_tasks{env=\"__ENVIRONMENT__\", site_name=\"__SITE_NAME__\",\n    job=~\"zdc-microservice-unit-api.*\", name=\"bolExecutorService\"}\n) > 100\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} tasks queued on BOL executor '{{ $labels.name }}' ({{ $labels.job }} / {{ $labels.host_name }}) in __SITE_NAME__/__ENVIRONMENT__ for 5+ minutes. Max pool is executor.thread-pool-count (default 10) - async BOL work is falling behind.",
+        "summary": "BOL executor queue backlog on {{ $labels.job }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "b4b757d1-b986-5228-8be1-c8db35062a65",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ManifestRecordFailureRateHigh",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  100 * sum(increase({__name__=~\"bol_manifest_records_error(_count)?_total\",\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[30m]))\n  /\n  clamp_min(\n    sum(increase({__name__=~\"bol_manifest_records_error(_count)?_total\",\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[30m]))\n    +\n    sum(increase({__name__=~\"bol_manifest_records_success(_count)?_total\",\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[30m]))\n  , 1)\n) > 20\nand\nsum(increase({__name__=~\"bol_manifest_records_total(_count)?_total\",\n  site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[30m])) > 10\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.1f\" }}% of BOL manifest records failed over the last 30 minutes in __SITE_NAME__/__ENVIRONMENT__. Break down by error_type on bol_manifest_records_error: VALIDATION = rejected by BOL rules, BUSINESS/CONSTRAINT/UNEXPECTED = processing defect.",
+        "summary": "BOL Manifest Record Failure Rate High (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_manifest",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "835d1af4-1d4c-5a16-9857-89fcddb80904",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ManifestHardFailures",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(error_type, operation) (\n  increase({__name__=~\"bol_manifest_records_error(_count)?_total\",\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", error_type=~\"UNEXPECTED|CONSTRAINT\"}[15m])\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} manifest records failed with error_type={{ $labels.error_type }} (operation={{ $labels.operation }}) in the last 15 minutes in __SITE_NAME__/__ENVIRONMENT__. These are code/DB defects, not caller validation errors - unique-constraint clashes or unhandled exceptions in SubmitManifestBolProcessor.",
+        "summary": "BOL Manifest Hard Failures - {{ $labels.error_type }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_manifest",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "40a7c241-93e4-5548-ac64-4d68aa3988af",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ManifestProcessingP95High",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "histogram_quantile(0.95,\n  sum by(le, job, host_name) (\n    rate(bol_submit_manifest_processing_time_milliseconds_bucket{\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[15m])\n  )\n) > 30000\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "P95 end-to-end processing time for one BOL manifest message is {{ $value | printf \"%.0f\" }}ms on {{ $labels.job }} / {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 30s. Drill into bol_equipment_validation_time_milliseconds and bol_candi_dispatch_time_milliseconds to find which stage regressed.",
+        "summary": "BOL Manifest Processing p95 High (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_manifest",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "14967a07-b898-59d1-8f3c-6fb737db0c9e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ManifestQueueLagP95High",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "histogram_quantile(0.95,\n  sum by(le, job, host_name) (\n    rate(bol_submit_manifest_queue_lag_milliseconds_bucket{\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[15m])\n  )\n) > 60000\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "P95 wait time between manifest publish and pickup is {{ $value | printf \"%.0f\" }}ms on {{ $labels.job }} / {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 60s. Consumers on event-action nodes are not keeping up with BOL.BACKGROUND.TASK.PROCESS.QUEUE.",
+        "summary": "BOL Manifest Queue Lag p95 High (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_manifest",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "1243fa43-611b-5bba-ad83-a3cb7c26451e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ManifestConsumerStalled",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum(increase(bol_submit_manifest_processing_time_milliseconds_count{\n  site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[15m])) < 1\nand on()\nmax(activemq_message_current_messages{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n  destination=\"BOL.BACKGROUND.TASK.PROCESS.QUEUE\"}) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "BOL.BACKGROUND.TASK.PROCESS.QUEUE is non-empty but zero manifests were processed in the last 15 minutes in __SITE_NAME__/__ENVIRONMENT__. The consumer is stalled or wedged - unlike the depth alert this fires even below the depth threshold.",
+        "summary": "BOL Manifest Consumer Stalled (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_manifest",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "e94dab7f-6823-5805-a0d0-d845a6d750f6",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]Api5xxWriteOps",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(http_route, host_name) (\n  increase(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol/(create|update|delete)\",\n    http_response_status_code=~\"5..\"\n  }[10m])\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} 5xx responses on {{ $labels.http_route }} in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. BOL master-data writes are failing - check unique-constraint violations, DB availability and core auth.",
+        "summary": "5xx Errors - BOL Write APIs (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "9c4cf6ba-0a01-512f-92e6-1e56dda4f46d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]CandiDispatchFailures",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(action, job, host_name) (\n  increase({__name__=~\"bol_candi_dispatch_failures(_count)?_total\",\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[10m])\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} CANDI register-batch-task dispatch failures (action={{ $labels.action }}) in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Manifest units are not reaching unit dix-import - the BOL row exists but its equipment never gets created/updated.",
+        "summary": "BOL to CANDI Dispatch Failures - {{ $labels.action }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_manifest",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "160d3256-3b41-5d6d-9fc6-47674ceb279c",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]CandiDispatchP95High",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "histogram_quantile(0.95,\n  sum by(le, action, job, host_name) (\n    rate(bol_candi_dispatch_time_milliseconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[10m])\n  )\n) > 5000\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "P95 CANDI register-batch-task call from BOL is {{ $value | printf \"%.0f\" }}ms (action={{ $labels.action }}) on {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 5s. CANDI is slow - manifest processing time will follow.",
+        "summary": "BOL to CANDI Dispatch p95 Latency High (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_manifest",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "5751cdd4-0e42-505d-9bb5-ced94de9fe29",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]EquipmentValidationP95High",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "histogram_quantile(0.95,\n  sum by(le, job, host_name) (\n    rate(bol_equipment_validation_time_milliseconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[10m])\n  )\n) > 5000\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "P95 equipment pre-validation (structural + TOS + EQP master) is {{ $value | printf \"%.0f\" }}ms on {{ $labels.job }} / {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 5s. Check report-view queries UNIT_FAC_CYCLE / EQP_EQUIPMENT and reference-data cache hit rate.",
+        "summary": "BOL Equipment Pre-validation p95 High (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_manifest",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bf49833d-d82d-5a79-917d-b5ac1d396a6e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]EquipmentUnitsFilteredSpike",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum(increase({__name__=~\"bol_equipment_units_filtered(_count)?_total\",\n  site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[1h])) > 50\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "15m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} manifest equipment units were dropped by pre-validation in the last hour in __SITE_NAME__/__ENVIRONMENT__. Silent data loss from the caller's point of view - the manifest succeeds but those units never reach TOS. Check the warningDetail in the background task response and upstream EDI data quality.",
+        "summary": "BOL Equipment Units Filtered Spike (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_manifest",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "5a3abd5e-ecc3-5883-a380-41c2cea47b78",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]EquipmentQueryFailures",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(stage, job, host_name) (\n  increase({__name__=~\"bol_equipment_validation_failures(_count)?_total\",\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[10m])\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} equipment pre-validation query failures at stage={{ $labels.stage }} in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. The query falls back to an empty map, so units get classified on incomplete data - wrong CREATE/UPDATE split is possible.",
+        "summary": "BOL Equipment Query Failures - {{ $labels.stage }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_manifest",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "9b1c8818-7bd4-5c2d-b5b1-2d62835a9e23",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AssociationLagP95High",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "histogram_quantile(0.95,\n  sum by(le, flow, job, host_name) (\n    rate(bol_unit_association_lag_milliseconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[15m])\n  )\n) > 300000\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "P95 lag between the unit event being published and BOL processing it is {{ $value | printf \"%.0f\" }}ms for flow={{ $labels.flow }} on {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 5 minutes. BOL-unit linkage is stale for operations staff even though nothing is erroring.",
+        "summary": "BOL-Unit Association Lag p95 High - {{ $labels.flow }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_association",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "9f9267fc-c427-5794-b088-974064be0d95",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AssociationFailures",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(flow, error_type, host_name) (\n  increase({__name__=~\"bol_unit_association_failures(_count)?_total\",\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[10m])\n) > 2\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} failures on flow={{ $labels.flow }} (error_type={{ $labels.error_type }}) in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Messages are acknowledged after failure, so unit-BOL linkage silently drifts - reconcile affected units.",
+        "summary": "BOL-Unit Association Failures - {{ $labels.flow }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_association",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "734396e5-7e16-5852-9be9-09794fcd45fb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AssociationProcessingP95High",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "histogram_quantile(0.95,\n  sum by(le, flow, job, host_name) (\n    rate(bol_unit_association_processing_time_milliseconds_bucket{\n      site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[10m])\n  )\n) > 10000\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "P95 processing time for flow={{ $labels.flow }} is {{ $value | printf \"%.0f\" }}ms on {{ $labels.job }} / {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 10s. Slow consumers here feed the queue-depth and association-lag alerts.",
+        "summary": "BOL-Unit Association Processing p95 High - {{ $labels.flow }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_association",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ec983860-0977-5f2d-aee2-656b645e270f",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]HoldPropagationFailures",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(reason, job, host_name) (\n  increase({__name__=~\"bol_hold_propagation_failures(_count)?_total\",\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[10m])\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} BOL hold/release propagations to UNIT failed with reason={{ $labels.reason }} in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Hold state is inconsistent between BOL and UNIT - compliance risk, cargo may move while held on the BOL.",
+        "summary": "BOL Hold Propagation Failures - {{ $labels.reason }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_hold",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "1777c26a-2efa-5096-976d-00214445645a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]HoldBatchDispatchP95High",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "histogram_quantile(0.95,\n  sum by(le, job, host_name) (\n    rate(bol_hold_batch_dispatch_time_milliseconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[10m])\n  )\n) > 5000\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "P95 hold/release batch dispatch to UNIT is {{ $value | printf \"%.0f\" }}ms on {{ $labels.job }} / {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__, exceeding 5s. This call runs inside the applyReleaseHold request, so BOL hold API latency will track it.",
+        "summary": "BOL Hold Batch Dispatch p95 High (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "bol_hold",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "2ca2e983-2b4a-5cf0-93d3-8b67de759a6d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]Api5xxAssociateApis",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(http_route, host_name) (\n  increase(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol/(associate|disassociate|update)/(unit|commodity)\",\n    http_response_status_code=~\"5..\"\n  }[10m])\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} 5xx responses on {{ $labels.http_route }} in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Unit/commodity linkage to BOL is failing - units may be left without BOL association.",
+        "summary": "5xx Errors - BOL Associate/Disassociate APIs (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "c42d64f4-bf37-5187-9213-463c6814f247",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]Api5xxHoldApis",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(http_route, host_name) (\n  increase(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol/(applyReleaseHold|deleteHold|apply-hold-codes)\",\n    http_response_status_code=~\"5..\"\n  }[10m])\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} 5xx responses on {{ $labels.http_route }} in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. BOL hold apply/release is failing - cargo may be released without a hold or stay held incorrectly. Check the UNIT batch hold API downstream.",
+        "summary": "5xx Errors - BOL Hold APIs (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "df45831f-84ff-598b-b9ed-d0279236d1a3",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]Api5xxEdi310",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(http_route, host_name) (\n  increase(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=\"/zodiac/unit-api/api/v1/bol/edi310\",\n    http_response_status_code=~\"5..\"\n  }[10m])\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} 5xx responses on /zodiac/unit-api/api/v1/bol/edi310 in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Inbound EDI 310 manifests are being rejected - check vessel-visit lookup and BolWebService.",
+        "summary": "5xx Errors - BOL EDI 310 (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "5515ea3f-7dc0-5f97-9f9e-1b237d35c368",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ApiFastBurn5xx",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  100 * sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol.*\",\n    http_response_status_code=~\"5..\"}[5m]))\n  /\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol.*\"}[5m]))\n) > 10\nand\n(\n  100 * sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol.*\",\n    http_response_status_code=~\"5..\"}[1h]))\n  /\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol.*\"}[1h]))\n) > 2\nand\nsum(increase(http_server_request_duration_seconds_count{\n  site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n  http_route=~\"/zodiac/unit-api/api/v1/bol.*\"}[1h])) > 20\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Error rate exceeding 10% (5m) and 2% (1h) on /zodiac/unit-api/api/v1/bol.* in __SITE_NAME__/__ENVIRONMENT__, with at least 20 requests in the last hour. Current 5m error rate: {{ $value | printf \"%.1f\" }}%. Immediate investigation required.",
+        "summary": "Fast Burn 5xx - BOL All APIs (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "0f147931-9548-598a-ba55-e16c9b9f56d0",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ApiSlowBurn5xx",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  100 * sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol.*\",\n    http_response_status_code=~\"5..\"}[1h]))\n  /\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol.*\"}[1h]))\n) > 20\nand\n(\n  100 * sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol.*\",\n    http_response_status_code=~\"5..\"}[6h]))\n  /\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol.*\"}[6h]))\n) > 5\nand\nsum(increase(http_server_request_duration_seconds_count{\n  site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n  http_route=~\"/zodiac/unit-api/api/v1/bol.*\"}[6h])) > 50\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Error rate exceeding 20% (1h) and 5% (6h) on /zodiac/unit-api/api/v1/bol.* in __SITE_NAME__/__ENVIRONMENT__, with at least 50 requests in the last 6h. Current 1h error rate: {{ $value | printf \"%.1f\" }}%. Sustained BOL degradation.",
+        "summary": "Slow Burn 5xx - BOL All APIs (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "09a2863e-3e8a-5072-89d5-175d6ad3186d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]Api4xxSpike",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(http_route) (\n  increase(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\",\n    http_route=~\"/zodiac/unit-api/api/v1/bol.*\",\n    http_response_status_code=~\"4..\"\n  }[10m])\n) > 20\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} 4xx responses on {{ $labels.http_route }} in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__. Possible bad payloads from the caller, validation/constraint rejections, expired token or missing BOL/unit references.",
+        "summary": "API 4xx Spike - BOL APIs (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

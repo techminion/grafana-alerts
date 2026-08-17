@@ -1,0 +1,2628 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "0ac12883-821f-5c10-92de-4424dbadacff",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintJVMHeapWarning",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "builder",
+            "expr": "(\n  sum by(host_name, job) (\n    jvm_memory_used_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zdc-microservice-print\"\n    }\n  ) * 100\n)\n/\n(\n  sum by(host_name, job) (\n    jvm_memory_limit_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zdc-microservice-print\"\n    }\n  )\n) > 85\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "JVM heap memory usage is {{ $value | printf \"%.1f\" }}% on {{ $labels.host_name }} ({{ $labels.job }}) in __SITE_NAME__/__ENVIRONMENT__.\nApproaching critical threshold. GC pressure will increase.\n\nPossible causes:\n- Heap leak or excessive object retention\n- Insufficient heap sizing\n- Traffic spike driving allocation rate\n\nRecommended checks:\n- Review JVM heap graphs and GC pause rate\n- Check for memory leak indicators\n- Consider increasing -Xmx if baseline has grown",
+        "summary": "JVM Heap Warning (>85%) - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "memory",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "1212de7f-bb4b-58a3-a519-5f218ce1edea",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintFrequentRestarts",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "changes(\n  max by(service, node, ip, port, site_name, env) (\n    bos_service_up{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      service=~\"print\"\n    }\n  )[7m:1m]\n) >= 4\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "1m",
+      "annotations": {
+        "description": "zdc-microservice-print on {{ $labels.node }} in __SITE_NAME__/__ENVIRONMENT__ has restarted {{ $value }} times in the last 7 minutes.\nPossible crash loop, OOM kill, or bad deployment.\n\nImmediate actions:\n- Review container restart reason (OOM / exit code)\n- Inspect JVM crash logs and heap dumps\n- Check recent deployment changes",
+        "summary": "Frequent Container Restarts - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "availability",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "7373570b-c7f7-544a-929b-aa34c898864d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintAPIGoneSilent",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "builder",
+            "expr": "(sum by(http_route) (increase(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zdc-microservice-print\", http_route=~\"/print-service/create-job|/print/job/ka\"}[1h]) > 100)) unless (sum by(http_route) (increase(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zdc-microservice-print\", http_route=~\"/print-service/create-job|/print/job/ka\"}[15m]) > 1))",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "3m",
+      "annotations": {
+        "description": "Route {{ $labels.http_route }} received >100 requests in the last hour but has had\nno traffic for the past 15 minutes in __SITE_NAME__/__ENVIRONMENT__.\n\nPossible causes:\n- Upstream routing or load balancer misconfiguration\n- Client application outage\n- Authentication failure blocking all requests\n- Service degradation preventing requests from reaching this route",
+        "summary": "API Gone Silent - {{ $labels.http_route }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "critical",
+        "signal": "availability",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "6fcb3906-9ba8-59ce-94af-0be62e0638e7",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintAPI4xxSpike",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "sum by(http_route) (\n  rate(\n    http_server_request_duration_seconds_count{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zdc-microservice-print\",\n      http_response_status_code=~\"4..\"\n    }[5m]\n  )\n) > 5\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "High 4xx error rate ({{ $value | printf \"%.2f\" }} req/s) detected on {{ $labels.http_route }}\nfor zdc-microservice-print in __SITE_NAME__/__ENVIRONMENT__.\n\nPossible causes:\n- Authentication / authorisation failures (401/403)\n- Invalid client request payloads\n- API contract mismatch after deployment\n- Missing resources or endpoints (404)",
+        "summary": "API 4xx Spike on {{ $labels.http_route }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "6bd44934-b147-55b9-a200-c035c50972ec",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintAPI5xxFastBurn",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  sum(\n    rate(\n      http_server_request_duration_seconds_count{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zdc-microservice-print\",\n        http_response_status_code=~\"5..\"\n      }[5m]\n    )\n  )\n  /\n  clamp_min(\n    sum(\n      rate(\n        http_server_request_duration_seconds_count{\n          site_name=\"__SITE_NAME__\",\n          env=\"__ENVIRONMENT__\",\n          job=~\"zdc-microservice-print\"\n        }[5m]\n    )\n  ), 0.001)\n) * 100 > 10\nand\n(\n  sum(\n    rate(\n      http_server_request_duration_seconds_count{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zdc-microservice-print\",\n        http_response_status_code=~\"5..\"\n      }[1h]\n    )\n  )\n  /\n  clamp_min(\n    sum(\n      rate(\n        http_server_request_duration_seconds_count{\n          site_name=\"__SITE_NAME__\",\n          env=\"__ENVIRONMENT__\",\n          job=~\"zdc-microservice-print\"\n        }[1h]\n    )\n  ), 0.001)\n) * 100 > 2\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "5xx error rate exceeds 10% over the last 5 minutes AND 2% over the last hour\non zdc-microservice-print in __SITE_NAME__/__ENVIRONMENT__. Dual-window confirmation indicates a real incident,\nnot a transient spike.\n\nCurrent 5-minute error rate: {{ $value | printf \"%.1f\" }}%\n\nImmediate investigation required.",
+        "summary": "Fast-Burn 5xx (>10% / 5m + >2% / 1h) - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "critical",
+        "signal": "app-errors",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "7d19db4c-0765-5b31-9266-fc4b0c0e4d07",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintAPI5xxSlowBurn",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  sum(\n    rate(\n      http_server_request_duration_seconds_count{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zdc-microservice-print\",\n        http_response_status_code=~\"5..\"\n      }[1h]\n    )\n  )\n  /\n  clamp_min(\n    sum(\n      rate(\n        http_server_request_duration_seconds_count{\n          site_name=\"__SITE_NAME__\",\n          env=\"__ENVIRONMENT__\",\n          job=~\"zdc-microservice-print\"\n        }[1h]\n    )\n  ), 0.001)\n) * 100 > 2\nand\n(\n  sum(\n    rate(\n      http_server_request_duration_seconds_count{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zdc-microservice-print\",\n        http_response_status_code=~\"5..\"\n      }[6h]\n    )\n  )\n  /\n  clamp_min(\n    sum(\n      rate(\n        http_server_request_duration_seconds_count{\n          site_name=\"__SITE_NAME__\",\n          env=\"__ENVIRONMENT__\",\n          job=~\"zdc-microservice-print\"\n        }[6h]\n    )\n  ), 0.001)\n) * 100 > 1\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "30m",
+      "annotations": {
+        "description": "Sustained elevated 5xx rate detected on zdc-microservice-print in __SITE_NAME__/__ENVIRONMENT__.\n1h error rate >2% AND 6h error rate >1% indicate persistent application instability.\n\nPossible causes:\n- Deployment regression\n- Dependency instability\n- Database failures\n- Thread pool exhaustion",
+        "summary": "Slow-Burn 5xx (>2%/1h + >1%/6h) - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "warning",
+        "signal": "app-errors",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "0213976a-cd4c-59e7-a2aa-fa2274c263e3",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintAPIOverallP95Latency",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(histogram_quantile(0.95, sum by(http_route, le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zdc-microservice-print\", http_route=~\"/print-service/create-job|/print/job/ka\"}[5m]))) > 2) and (sum by(http_route) (rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zdc-microservice-print\", http_route=~\"/print-service/create-job|/print/job/ka\"}[5m]) > 0.5))",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for {{ $labels.http_route }} on zdc-microservice-print in __SITE_NAME__/__ENVIRONMENT__ is\n{{ $value | printf \"%.3f\" }}s, exceeding the 2s threshold.\n\nPossible causes:\n- Database latency or slow queries\n- Downstream dependency slowness\n- JVM GC pauses\n- Thread pool saturation",
+        "summary": "High P95 Latency on {{ $labels.http_route }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "225027d7-8f9b-5ce4-9884-e3405fb717ec",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintAPIRequestRateDrop",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  sum by(http_route) (\n    rate(\n      http_server_request_duration_seconds_count{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zdc-microservice-print\",\n        http_route=~\"/zodiac/core/.*\",\n        http_route!~\"/index.jsp|/zodiac/\\\\*|/zodiac/core/\\\\*|/zodiac/core/\\\\*\\\\*\"\n      }[5m]\n    )\n  )\n  /\n  avg_over_time(\n    sum by(http_route) (\n      rate(\n        http_server_request_duration_seconds_count{\n          site_name=\"__SITE_NAME__\",\n          env=\"__ENVIRONMENT__\",\n          job=~\"zdc-microservice-print\",\n          http_route=~\"/zodiac/core/.*\",\n          http_route!~\"/index.jsp|/zodiac/\\\\*|/zodiac/core/\\\\*|/zodiac/core/\\\\*\\\\*\"\n        }[5m]\n      )\n    )[1h:5m]\n  )\n) < 0.2\nand\n(\n  avg_over_time(\n    sum by(http_route) (\n      rate(\n        http_server_request_duration_seconds_count{\n          site_name=\"__SITE_NAME__\",\n          env=\"__ENVIRONMENT__\",\n          job=~\"zdc-microservice-print\",\n          http_route=~\"/zodiac/core/.*\",\n          http_route!~\"/index.jsp|/zodiac/\\\\*|/zodiac/core/\\\\*|/zodiac/core/\\\\*\\\\*\"\n        }[5m]\n      )\n    )[1h:5m]\n  ) > 0.5\n)\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Request rate for {{ $labels.http_route }} has dropped below 20% of its 1h rolling\nbaseline on zdc-microservice-print in __SITE_NAME__/__ENVIRONMENT__.\n\nPossible causes:\n- Upstream routing failure or ingress issue\n- Authentication failure blocking all requests\n- Frontend disconnect or deployment regression",
+        "summary": "API Request Rate Drop on {{ $labels.http_route }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cdb4f2c6-ca9b-5341-9447-b6f75c47d73e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintDBPoolPendingRequests",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "avg_over_time(\n  db_client_connections_pending_requests{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    job=~\"zdc-microservice-print\"\n  }[5m]\n) > 2\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.1f\" }} threads are queued waiting for a DB connection on\nzdc-microservice-print in __SITE_NAME__/__ENVIRONMENT__ (5m avg sustained 5m+).\n\nPool is undersized or queries are running slowly.\nCheck slow-query log and pool max-size configuration.",
+        "summary": "DB Pool Pending Requests - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "warning",
+        "signal": "db-pool",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "7811e594-65b5-5b4f-87ce-ab5f285180fe",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintDBPoolAcquireSlow",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  sum by(host_name, job) (\n    rate(\n      db_client_connections_wait_time_milliseconds_sum{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zdc-microservice-print\"\n      }[5m]\n    )\n  )\n  /\n  clamp_min(\n    sum by(host_name, job) (\n      rate(\n        db_client_connections_wait_time_milliseconds_count{\n          site_name=\"__SITE_NAME__\",\n          env=\"__ENVIRONMENT__\",\n          job=~\"zdc-microservice-print\"\n        }[5m]\n      )\n    ), 0.001)\n) > 500\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "3m",
+      "annotations": {
+        "description": "Average DB connection acquisition time is {{ $value | printf \"%.0f\" }}ms on\n{{ $labels.host_name }} ({{ $labels.job }}) in __SITE_NAME__/__ENVIRONMENT__, exceeding the 500ms threshold.\n\nApplication threads are waiting excessively for DB connections.\n\nPossible causes:\n- Connection pool undersized\n- Slow/long-running queries holding connections\n- Connection leaks\n- Downstream DB saturation",
+        "summary": "DB Pool Slow Connection Acquire - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "db",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "warning",
+        "signal": "db-pool",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "88f63e89-004a-50bb-a5f7-ea1ce2185763",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintDBPoolExhausted",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  sum by(pool_name, env, site_name, job) (\n    db_client_connections_usage{\n      state=\"used\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zdc-microservice-print\"\n    }\n  )\n  /\n  sum by(pool_name, env, site_name, job) (\n    db_client_connections_max{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zdc-microservice-print\"\n    }\n  )\n) >= 0.95\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "2m",
+      "annotations": {
+        "description": "DB pool {{ $labels.pool_name }} on zdc-microservice-print in __SITE_NAME__/__ENVIRONMENT__ is at\n{{ $value | humanizePercentage }} capacity for 2m+.\n\nNew requests are queueing or failing. Immediate impact on user-facing latency.\n\nCheck for:\n- Runaway queries holding connections\n- Deadlocks\n- Downstream DB stall holding connections open",
+        "summary": "DB Pool Exhausted (>=95%) - {{ $labels.pool_name }} (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "critical",
+        "signal": "db-pool",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "466b027c-031c-5104-896c-c36c942104e5",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintJVMHeapCritical",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  sum by(host_name, job) (\n    jvm_memory_used_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zdc-microservice-print\"\n    }\n  ) * 100\n)\n/\n(\n  sum by(host_name, job) (\n    jvm_memory_limit_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zdc-microservice-print\"\n    }\n  )\n) > 95\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "JVM heap memory usage is {{ $value | printf \"%.1f\" }}% on {{ $labels.host_name }} ({{ $labels.job }}) in __SITE_NAME__/__ENVIRONMENT__.\nOOM kill is imminent. Immediate action required.\n\nPossible causes:\n- Heap memory leak\n- Excessive object allocation with insufficient GC\n- Heap undersized for current load\n\nImmediate actions:\n- Trigger heap dump: jcmd <pid> GC.heap_info\n- Review recent deployments for regressions\n- Consider triggering a controlled restart if service is degraded",
+        "summary": "JVM Heap Critical (>95%) - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "memory",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfqro1hb7r400c",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] Print Agent Offline",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "print_agent_status_ratio{site_code=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"} == 0\nand\nprint_agent_status_ratio{site_code=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"} offset 2m == 1\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Print Agent {{$labels.agent_id }}, {{$labels.queue_name }} is OFFILINE now on {{ $labels.host_name }} ({{ $labels.job }}) in __SITE_NAME__/__ENVIRONMENT__.\n\n\nStep-by-step investigation:\n1. On the WORKSTATION:\n   - Open Services (services.msc)\n   - Check if \"ZodiacAgent\" service is Running or Stopped\n\n2. If STOPPED:\n   - Open: Logs\\zodiac-agent.service.log\n   - Search for: ERROR, Exception, Service stopped\n   - Restart: sc stop ZodiacAgent && sc start ZodiacAgent\n   - Verify: agent comes back Online in /print-service/print-queues\n\n3. If RUNNING but still shows Offline:\n   - Check: Can the workstation reach the server? (ping {PrintServer})\n   - Check: Can browser open http://{PrintServer}:3200/actuator/health ?\n   - Open the log, look for: \"Unauthorized\", \"UriFormatException\", \"Exception\"\n\n4. If the health endpoint is DOWN → escalate to L2 (server issue)\n5. If health is UP but agent still offline → check App.config Api.KA URL is correct",
+        "summary": "High Priority- Print Agent Got Offline - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "alert_type": "availability",
+        "bu": "zodiac",
+        "channel": "msteams",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "c7dcd5e9-b365-50c2-aeaa-754cfdacb43c",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintContainerMemoryCritical",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  sum by(container_name, host_name) (\n    container_memory_usage_total_bytes{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      container_name=\"zdc-microservice-print\"\n    }\n  )\n  /\n  sum by(container_name, host_name) (\n    container_memory_usage_limit_bytes{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      container_name=\"zdc-microservice-print\"\n    }\n  )\n) * 100 > 85\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Container {{ $labels.container_name }} on {{ $labels.host_name }} is using {{ $value | printf \"%.1f\" }}%\nof its configured memory limit in __SITE_NAME__/__ENVIRONMENT__. Container OOM kill likely without intervention.\n\nImmediate actions:\n- Verify JVM heap vs container limit alignment\n- Review GC metrics for stop-the-world pauses\n- Check for recent deployments or configuration changes",
+        "summary": "Container Memory Critical (>85%) - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "memory",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "2d09dba2-b1d5-5ed7-a1f4-6f9c36b97bd5",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintContainerMemoryWarning",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  sum by(container_name, host_name) (\n    container_memory_usage_total_bytes{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      container_name=\"zdc-microservice-print\"\n    }\n  )\n  /\n  sum by(container_name, host_name) (\n    container_memory_usage_limit_bytes{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      container_name=\"zdc-microservice-print\"\n    }\n  )\n) * 100 > 75\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Container {{ $labels.container_name }} on {{ $labels.host_name }} is using {{ $value | printf \"%.1f\" }}%\nof its configured memory limit in __SITE_NAME__/__ENVIRONMENT__. Risk of OOM kill if usage continues to grow.\n\nPossible causes:\n- JVM heap growth beyond configured -Xmx\n- Native/off-heap memory growth (direct buffers, metaspace)\n- Excessive caching\n- Traffic spike",
+        "summary": "Container Memory Warning (>75%) - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "memory",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "5e17ce80-32f5-5c16-9646-22aa1cd7b5f2",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintJVMCPUWarning",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "builder",
+            "expr": "jvm_cpu_recent_utilization_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zdc-microservice-print\"} * 100 > 70",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "JVM CPU utilization is {{ $value | printf \"%.1f\" }}% on {{ $labels.host_name }} ({{ $labels.job }}) in __SITE_NAME__/__ENVIRONMENT__.\nRequests may experience elevated latency under sustained load.",
+        "summary": "JVM CPU Warning (>70%) - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "cpu",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "e36b607b-2b8d-5362-b747-77882e2d5585",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintJVMCPUCritical",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "jvm_cpu_recent_utilization_ratio{\n  site_name=\"__SITE_NAME__\",\n  env=\"__ENVIRONMENT__\",\n  job=~\"zdc-microservice-print\"\n} * 100 > 90\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "JVM CPU utilization is {{ $value | printf \"%.1f\" }}% on {{ $labels.host_name }} ({{ $labels.job }}) in __SITE_NAME__/__ENVIRONMENT__.\nApplication is likely throttled; requests are timing out or queuing.\n\nPossible causes:\n- Runaway thread or tight loop\n- Excessive GC activity consuming CPU\n- Traffic spike beyond capacity\n- Deserialisation/processing of abnormally large payloads",
+        "summary": "JVM CPU Critical (>90%) - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "cpu",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "d9f7ed88-51f9-5910-a7c2-708d9db7e18d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintJVMLongGCPauses",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  histogram_quantile(\n    0.99,\n    sum by(job, site_name, env, host_name, le) (\n      rate(\n        jvm_gc_duration_seconds_bucket{\n          site_name=\"__SITE_NAME__\",\n          env=\"__ENVIRONMENT__\",\n          job=~\"zdc-microservice-print\",\n          jvm_gc_name=~\"G1 Young Generation|G1 Old Generation\"\n        }[15m]\n      )\n    )\n  ) > 1.2\n)\nand\n(\n  sum by(job, site_name, env, host_name) (\n    increase(\n      jvm_gc_duration_seconds_count{\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        job=~\"zdc-microservice-print\",\n        jvm_gc_name=~\"G1 Young Generation|G1 Old Generation\"\n      }[15m]\n    )\n  ) > 500\n)\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P99 GC pause time is {{ $value | printf \"%.3f\" }}s on {{ $labels.host_name }} in __SITE_NAME__/__ENVIRONMENT__,\nexceeding the 1.2s threshold with >500 GC events in the last 15 minutes.\nStop-the-world pauses are stalling request-processing threads.\n\nPossible causes:\n- Excessive object allocation rate promoting to old gen\n- Heap approaching full causing major collections\n- Insufficient heap sizing (-Xmx too low)\n- Promotion failures\n\nImpact:\n- API latency spikes during GC cycles\n- Thread starvation during stop-the-world\n- Potential request timeouts",
+        "summary": "JVM Long GC Pauses (p99 >1.2s) - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "memory",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "b3a7c16e-2d42-5639-9d23-19ff3ab15790",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintThreadStarvation",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "(\n  sum by(job, site_name, env) (\n    jvm_thread_count{\n      job=~\"zdc-microservice-print\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      jvm_thread_state=\"runnable\"\n    }\n  )\n  /\n  sum by(job, site_name, env) (\n    jvm_thread_count{\n      job=~\"zdc-microservice-print\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\"\n    }\n  )\n) * 100 > 60\nand\n(\n  (\n    sum by(job, site_name, env) (\n      jvm_thread_count{\n        job=~\"zdc-microservice-print\",\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\",\n        jvm_thread_state=\"blocked\"\n      }\n    ) or vector(0)\n  )\n  /\n  sum by(job, site_name, env) (\n    jvm_thread_count{\n      job=~\"zdc-microservice-print\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\"\n    }\n  )\n) * 100 > 10\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Over 60% of threads are runnable and over 10% are blocked on {{ $labels.job }} in __SITE_NAME__/__ENVIRONMENT__.\nRisk of request timeouts and degraded throughput due to lock contention or thread pool exhaustion.\n\nPossible causes:\n- Lock contention on shared resources\n- Thread pool undersized for current load\n- Deadlock or near-deadlock condition\n- Database connection pool starvation cascading to thread blocking",
+        "summary": "Thread Starvation - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "c798c34f-8eba-5421-8d1e-05bb11c5f20b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PRINT] PrintContainerDown",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "expr": "max by(service, node, ip, port, site_name, env) (\n  bos_service_up{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    service=~\"print\"\n  }\n) < 1\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "2m",
+      "annotations": {
+        "description": "Health check for zdc-microservice-print instance {{ $labels.node }} ({{ $labels.ip }}:{{ $labels.port }})\nin __SITE_NAME__/__ENVIRONMENT__ is failing. The service is not responding to health checks.\n\nPossible causes:\n- Container stopped or crashed\n- JVM process terminated (OOM kill)\n- Application startup failure\n- Host resource exhaustion\n\nRecommended actions:\n- Check container status and JVM logs\n- Review recent deployments or config changes\n- Verify host CPU / memory / disk availability",
+        "summary": "Container Down - zdc-microservice-print (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "availability",
+        "bu": "zodiac",
+        "channel": "msteams",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Print-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "print-manager"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

@@ -1,0 +1,2303 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "ffpzkjyk2mjuoe",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ] Queue Depth > 1000",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum by(destination, site_name, env)(\n  activemq_message_current_messages{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\"\n  }\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1000
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "10m",
+      "annotations": {
+        "description": "Queue {{ $labels.destination }} has {{ $value }} pending messages in {{ $labels.site_name }}/{{ $labels.env }}, exceeding threshold of 1000 for 10 minutes. Consumers may be slow, stalled, or disconnected.\n\nAction:\n1. Check active consumers on this queue in AMQ console\n2. Check consumer-side logs for errors or stalls\n3. Verify the consumer service is running\n4. If DLQ is growing alongside, check for poison-pill messages",
+        "summary": "AMQ Queue Depth > 1000 — {{ $labels.destination }} ({{ $labels.site_name }}/{{ $labels.env }})"
+      },
+      "labels": {
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfmm2sqyqql8gf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-BE] Memory usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_memory_usage_percent{job=~\"activemq/activemq-be-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nBroker memory usage: {{ $values.A.Value }}%\nThreshold: > 15%\n\nElevated broker memory usage indicates messages building up in memory faster than they're being consumed. Check consumer health and queue depths.",
+        "summary": "{{ $labels.job }} memory usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-be",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfmm2tefme7lsa",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-NP] Memory usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_memory_usage_percent{job=~\"activemq/activemq-fe-np-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nBroker memory usage: {{ $values.A.Value }}%\nThreshold: > 15%",
+        "summary": "{{ $labels.job }} memory usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-np",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfmm2txtiixhcf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-PS] Memory usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_memory_usage_percent{job=~\"activemq/activemq-fe-ps-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nBroker memory usage: {{ $values.A.Value }}%\nThreshold: > 15%",
+        "summary": "{{ $labels.job }} memory usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-ps",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfmm2uh2oujuoc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-IF] Memory usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_memory_usage_percent{job=~\"activemq/activemq-if-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nBroker memory usage: {{ $values.A.Value }}%\nThreshold: > 15%",
+        "summary": "{{ $labels.job }} memory usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-if",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffmm2v41j8kcgb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-BE] Store usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_disk_store_usage_percent{job=~\"activemq/activemq-be-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nDisk store usage: {{ $values.A.Value }}%\nThreshold: > 15%\n\nPersistent message store filling up. Sustained growth indicates consumers can't keep up or messages are not being acknowledged.",
+        "summary": "{{ $labels.job }} disk store usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-be",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfmm2vnvl7mrke",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-NP] Store usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_disk_store_usage_percent{job=~\"activemq/activemq-fe-np-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nDisk store usage: {{ $values.A.Value }}%\nThreshold: > 15%",
+        "summary": "{{ $labels.job }} disk store usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-np",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfmm2xvia6kn4b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-PS] Store usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_disk_store_usage_percent{job=~\"activemq/activemq-fe-ps-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nDisk store usage: {{ $values.A.Value }}%\nThreshold: > 15%",
+        "summary": "{{ $labels.job }} disk store usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-ps",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfmm2yev4utc0b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-IF] Store usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_disk_store_usage_percent{job=~\"activemq/activemq-if-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nDisk store usage: {{ $values.A.Value }}%\nThreshold: > 15%",
+        "summary": "{{ $labels.job }} disk store usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-if",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afmm2z0k9lq0wc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-BE] Temp usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_disk_temp_usage_percent{job=~\"activemq/activemq-be-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nTemp store usage: {{ $values.A.Value }}%\nThreshold: > 15%\n\nNon-persistent (temp) message store filling up. Producers using non-persistent messages faster than consumers can process them.",
+        "summary": "{{ $labels.job }} temp store usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-be",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfmm2zk1a3vggf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-NP] Temp usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_disk_temp_usage_percent{job=~\"activemq/activemq-fe-np-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nTemp store usage: {{ $values.A.Value }}%\nThreshold: > 15%",
+        "summary": "{{ $labels.job }} temp store usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-np",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffmm2lrw75ekge",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-BE] Master not healthy",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count(group by (job) (activemq_message_current_messages{job=~\"activemq/activemq-be-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5,
+                    1.5
+                  ],
+                  "type": "outside_range"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "3m",
+      "annotations": {
+        "description": "Broker pair: activemq-be (be-1, be-2)\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nActive masters in pair: {{ $values.A.Value }}\nExpected: exactly 1\n\nSignal: destinations are only registered on the active master. Count of jobs reporting destinations should equal 1 per pair. 0 = no master (cluster down). 2 = split-brain (both brokers think they're master).",
+        "summary": "AMQ-BE master not healthy (active masters in pair = {{ $values.A.Value }}, expected 1)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-be",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfmm3033685j4a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-PS] Temp usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_disk_temp_usage_percent{job=~\"activemq/activemq-fe-ps-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nTemp store usage: {{ $values.A.Value }}%\nThreshold: > 15%",
+        "summary": "{{ $labels.job }} temp store usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-ps",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfmm30n2khekgb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-IF] Temp usage > 15%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_disk_temp_usage_percent{job=~\"activemq/activemq-if-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nTemp store usage: {{ $values.A.Value }}%\nThreshold: > 15%",
+        "summary": "{{ $labels.job }} temp store usage > 15% ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-if",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffmm33nfdf1tsb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-BE] Connections > 2000",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_connection_count_connections{job=~\"activemq/activemq-be-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2000
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nCurrent connections: {{ $values.A.Value }}\nThreshold: > 2000\n\nHigh connection count may indicate client connection leaks or runaway producer/consumer fan-out.",
+        "summary": "{{ $labels.job }} connections > 2000 ({{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-be",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfmm346tc1o1sb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-NP] Connections > 2500",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_connection_count_connections{job=~\"activemq/activemq-fe-np-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2500
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nCurrent connections: {{ $values.A.Value }}\nThreshold: > 2000",
+        "summary": "{{ $labels.job }} connections > 2000 ({{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-np",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efmm34qj5oxdsa",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-PS] Connections > 2000",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_connection_count_connections{job=~\"activemq/activemq-fe-ps-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2000
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nCurrent connections: {{ $values.A.Value }}\nThreshold: > 2000",
+        "summary": "{{ $labels.job }} connections > 2000 ({{ $values.A.Value }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-ps",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efmm35kco1z40e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-IF] Connections > 2000",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, site_name, env) (activemq_connection_count_connections{job=~\"activemq/activemq-if-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2000
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nCurrent connections: {{ $values.A.Value }}\nThreshold: > 2000",
+        "summary": "{{ $labels.job }} connections > 2000 ({{ $values.A.Value }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-if",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfmm36w0ib1tsb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ] DLQ depth > 50000",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (job, destination, site_name, env) (activemq_message_current_messages{destination=\"ActiveMQ.DLQ\", job=~\"activemq/activemq-.*\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    50000
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker: {{ $labels.job }}\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\nDestination: ActiveMQ.DLQ\n\nDLQ depth: {{ $values.A.Value }} messages\nThreshold: > 50000\n\nDead-letter queue accumulating. Messages have failed processing past their retry limit and are stuck. Investigate consumer error logs and decide whether to redeliver, drop, or fix poison-pill messages.",
+        "summary": "{{ $labels.job }} DLQ depth > 50000 ({{ $values.A.Value }} messages)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efmm2md26obuoe",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-NP] Master not healthy",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count(group by (job) (activemq_message_current_messages{job=~\"activemq/activemq-fe-np-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5,
+                    1.5
+                  ],
+                  "type": "outside_range"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "3m",
+      "annotations": {
+        "description": "Broker pair: activemq-fe-np (fe-np-1, fe-np-2)\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nActive masters in pair: {{ $values.A.Value }}\nExpected: exactly 1\n\n0 = no master. 2 = split-brain.",
+        "summary": "AMQ-FE-NP master not healthy (active masters in pair = {{ $values.A.Value }}, expected 1)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-np",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffmm2mxb81gxsc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-PS] Master not healthy",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count(group by (job) (activemq_message_current_messages{job=~\"activemq/activemq-fe-ps-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5,
+                    1.5
+                  ],
+                  "type": "outside_range"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "3m",
+      "annotations": {
+        "description": "Broker pair: activemq-fe-ps (fe-ps-1, fe-ps-2)\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nActive masters in pair: {{ $values.A.Value }}\nExpected: exactly 1\n\n0 = no master. 2 = split-brain.",
+        "summary": "AMQ-FE-PS master not healthy (active masters in pair = {{ $values.A.Value }}, expected 1)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-ps",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afmm2nhn3sg74f",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-IF] Master not healthy",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count(group by (job) (activemq_message_current_messages{job=~\"activemq/activemq-if-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5,
+                    1.5
+                  ],
+                  "type": "outside_range"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "3m",
+      "annotations": {
+        "description": "Broker pair: activemq-if (if-1, if-2)\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nActive masters in pair: {{ $values.A.Value }}\nExpected: exactly 1\n\n0 = no master. 2 = split-brain.",
+        "summary": "AMQ-IF master not healthy (active masters in pair = {{ $values.A.Value }}, expected 1)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-if",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfmm2o7qj3pq8f",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-BE] JMX scrape unhealthy",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count(group by (job) (activemq_connection_count_connections{job=~\"activemq/activemq-be-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker pair: activemq-be\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nBrokers reporting JMX metrics in pair: {{ $values.A.Value }}\nExpected: 2 (both be-1 and be-2)\n\nA value of 1 means one broker has stopped reporting JMX (collector can't reach the JMX endpoint, broker JVM is down, or the broker host is unreachable). A value of 0 means both brokers in the pair are silent.",
+        "summary": "AMQ-BE JMX scrape unhealthy (reporting brokers = {{ $values.A.Value }}, expected 2)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-be",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffmm2pihhowlcd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-NP] JMX scrape unhealthy",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count(group by (job) (activemq_connection_count_connections{job=~\"activemq/activemq-fe-np-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker pair: activemq-fe-np\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nBrokers reporting JMX metrics in pair: {{ $values.A.Value }}\nExpected: 2 (both fe-np-1 and fe-np-2)",
+        "summary": "AMQ-FE-NP JMX scrape unhealthy (reporting brokers = {{ $values.A.Value }}, expected 2)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-np",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efmm2q7pu9n9cf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-FE-PS] JMX scrape unhealthy",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count(group by (job) (activemq_connection_count_connections{job=~\"activemq/activemq-fe-ps-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker pair: activemq-fe-ps\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nBrokers reporting JMX metrics in pair: {{ $values.A.Value }}\nExpected: 2 (both fe-ps-1 and fe-ps-2)",
+        "summary": "AMQ-FE-PS JMX scrape unhealthy (reporting brokers = {{ $values.A.Value }}, expected 2)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-fe-ps",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffmm2qyrj6rk0b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][AMQ-IF] JMX scrape unhealthy",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count(group by (job) (activemq_connection_count_connections{job=~\"activemq/activemq-if-(1|2)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Broker pair: activemq-if\nEnv: __ENVIRONMENT__ | Site: __SITE_NAME__\n\nBrokers reporting JMX metrics in pair: {{ $values.A.Value }}\nExpected: 2 (both if-1 and if-2)",
+        "summary": "AMQ-IF JMX scrape unhealthy (reporting brokers = {{ $values.A.Value }}, expected 2)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-AMQ-Alerts",
+        "service": "activemq-if",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

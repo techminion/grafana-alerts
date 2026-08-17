@@ -1,0 +1,2624 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "aflprx2xteayob",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-API overall p95 latency",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "histogram_quantile(0.95, sum by(le, http_route, env, site_name) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\"}[5m])))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    10
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API Route: {{ $labels.http_route }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nLatency (P95):\n- Value: {{ $values.A.Value }} sec\n- Threshold: > 10 sec\n\nCalculation:\nhistogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket[2m]))\n\nStatus:\nHigh latency detected for {{ $labels.http_route }}.\nCurrent value: {{ $values.A.Value }} (threshold: 10).",
+        "summary": "High P95 latency detected for {{ $labels.http_route }} (P95={{ $values.A.Value }}s)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dflpsv2013f28d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-JVM heap > 85%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum by (host_name, job, env, site_name) (\n    jvm_memory_used_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"\n    }\n  )\n/\n  sum by (host_name, job, env, site_name) (\n    jvm_memory_limit_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"\n    }\n  )\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    85
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJVM Heap Memory:\n- Usage: {{ $values.A.Value }}%\n- Threshold: > 85% (Warning)\n\nCalculation:\n(Used Heap / Max Heap) * 100\n\nStatus:\nHeap usage warning for {{ $labels.instance }}.\nCurrent heap usage: {{ $values.A.Value }}% (threshold: 85%).",
+        "summary": "Elevated JVM heap usage detected for {{ $labels.job }} (Heap={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "fflptr2whgoaof",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-JVM heap > 95%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum by (host_name, job, env, site_name) (\n    jvm_memory_used_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"\n    }\n  )\n/\n  sum by (host_name, job, env, site_name) (\n    jvm_memory_limit_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"\n    }\n  )\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    95
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\nHost Name: {{ $labels.host_name }}\n\nJVM Heap Memory:\n- Usage: {{ $values.A.Value }}%\n- Threshold: > 95%\n\nCalculation:\n(Used Heap / Max Heap) * 100\n\nStatus:\nHeap usage warning for {{ $labels.job }}.\nCurrent heap usage: {{ $values.A.Value }}% (threshold: 95%).",
+        "summary": "High JVM heap memory usage detected for {{ $labels.job }} host: {{ $labels.host_name }} (Heap={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "aflqc3v0lxrswa",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-ActiveMQ consumer count",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 21600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (host_name, site_name, env, destination) (activemq_consumer_count_consumers{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\", destination=~\"GLOBAL.(.*).SCALA.EDI.COORDINATOR.CALLBACK|GLOBAL.(.*).GENERIC.CODEMAP|GLOBAL.(.*).GENERIC.TRANSLATOR|GLOBAL.(.*).INBOUND.DISPATCHER|GLOBAL.(.*).OUTBOUND.CODEMAP|GLOBAL.(.*).TPFREP.EDI.TRANSLATION\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "2m",
+      "annotations": {
+        "description": "Queue: {{ $labels.destination }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nConsumer Status:\n- Active Consumers: {{ $values.A.Value }}\n- Threshold: < 1\n\nStatus:\nQueue appears down for {{ $labels.destination }}.\nCurrent value: {{ $values.A.Value }}.",
+        "summary": "ActiveMQ consumer missing for queue {{ $labels.destination }}"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflpukvh9vj7kd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-JVM CPU saturated",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 604800,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(host_name, job) (jvm_cpu_recent_utilization_ratio{\n  site_name=\"__SITE_NAME__\",\n  env=\"__ENVIRONMENT__\",\n  job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"\n} * 100)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    70
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nHost: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJVM CPU Usage:\n- Utilization: {{ $values.A.Value }}%\n- Threshold: > 70%\n\nInstance: {{ $labels.instance }}\n\nStatus:\nCPU saturation detected for {{ $labels.job }}.\nCurrent CPU usage: {{ $values.A.Value }}% (threshold: 70%).",
+        "summary": "High JVM CPU saturation detected for {{ $labels.job }} on {{ $labels.host_name }} (CPU={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dflq9xibm6kn4e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-Thread Starvation",
+      "condition": "E",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum by (host_name, job, env, site_name) (\n    jvm_thread_count{\n      job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      jvm_thread_state=\"runnable\"\n    }\n  )\n/\n  sum by (host_name, job, env, site_name) (\n    jvm_thread_count{\n      job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\"\n    }\n  )\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by (host_name, job, env, site_name) (\n    jvm_thread_count{\n      job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      jvm_thread_state=\"blocked\"\n    }\n  )\n/\n  sum by (host_name, job, env, site_name) (\n    jvm_thread_count{\n      job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\"\n    }\n  )\n) * 100\nOR on(job, env, site_name) vector(0)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    65,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nThread Metrics:\n- Blocking % (B): {{ $values.B.Value }}%\n- Runnable % (A): {{ $values.A.Value }}%\n- Threshold: > 15% blocked\n\nStatus:\nStarvation risk detected for {{ $labels.instance }}.\nCurrent value: {{ $values.B.Value }} (threshold: 65).",
+        "summary": "Thread starvation detected in {{ $labels.job }} (Blocked={{ $values.B.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "fflqbd15nuubke",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-Failed to queue in AMQ",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by (service_name, env, site_name) (\n  count_over_time(\n    {site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"}\n    |~ \"Failed to send message to .* after .* attempts\"\n  [5m])\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "Service: {{ $labels.service_name }}\nJob: {{ $labels.job }}\nEnv: {{ $labels.env }}\n\nMessage Failure:\n- Fail Count (A): {{ $values.A.Value }} in 5m\n- Condition: retry exhaustion failure detected\n\nStatus:\nFailure detected for {{ $labels.job }}.\nCurrent failure count/rate: {{ $values.A.Value }}.",
+        "summary": "AMQ message send failure detected for {{ $labels.job }}"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "aflqbqiwv0g00e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-Frequent container restarts",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(host_name, job) (\n  increase(application_restarts_count{job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[10m])\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "Service: {{ $labels.service_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nRestarts:\n- Count (A): {{ $values.A.Value }} in last 10m\n- Threshold: > 2\n\nStatus:\nRestart issue detected for {{ $labels.instance }}.\nRestart count: {{ $values.A.Value }} (threshold: 2).",
+        "summary": "Frequent restarts detected for {{ $labels.service_name }} (A={{ $values.A.Value }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bflqk4qq5q03kf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-Fast-Burn 5xx",
+      "condition": "E",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, http_route, env, site_name) (rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\",\n    http_response_status_code=~\"5..\"\n  }[5m]))\n  /\n  sum by (job, http_route, env, site_name) (rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\",\n  }[5m]))\n) * 100\n\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, http_route, env, site_name) (rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\",\n    http_response_status_code=~\"5..\"\n  }[1h]))\n  /\n  sum by (job, http_route, env, site_name) (rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\",\n  }[1h]))\n) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    5
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    5,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nError rate exceeding 10% over both 5m and 1h windows \n\nStatus:\nThreshold breach detected for {{ $labels.job }}.\nCurrent value: {{ $values.A.Value }}.",
+        "summary": "Fast-burn 5xx spike detected for {{ $labels.job }} (A={{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cflut69bmcmpsf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-ContainerMemory",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (container_name, env, site_name) (\n  container_memory_percent_ratio{\n    container_name=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\",\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\"\n  }\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    95
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.container_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n- Name: Container Memory Usage\n- Value: {{ $values.A.Value }}%\n- Threshold: > 95%\n\nImpact:\nHigh memory usage may cause GC pressure, slow response times, or container restarts (OOMKill).\n\nStatus:\nThreshold breach detected for {{ $labels.instance }}.\nCurrent value: {{ $values.A.Value }} (threshold: 95).",
+        "summary": "High memory usage detected in {{ $labels.container_name }} ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cflwoe7zcqqdcb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-DB pool - pending requests",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, env, site_name) (\n  db_client_connections_pending_requests{\n    job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\",\n    env=\"__ENVIRONMENT__\",\n    site_name=\"__SITE_NAME__\"\n  }\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n\nName: DB Client Connections Pending Requests\nCondition: > 0 (indicates DB connection pool saturation)\n\nImpact:\nPending DB requests indicate that all available connections in the pool are in use and new requests are waiting. This can lead to increased latency, request timeouts, and cascading failures across EDI services.\n\nStatus:\n\nDB Pool Saturation: TRUE\nSeverity: CRITICAL",
+        "summary": "DB pool pending requests detected in {{ $labels.job }} (pending requests > 0)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bflwkysy3l3i8e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-JVM long GC pauses",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(\n  0.95,\n  sum by (le, job, env, host_name, site_name) (\n    rate(jvm_gc_pause_seconds_bucket{\n      job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\",\n      env=\"__ENVIRONMENT__\",\n      site_name=\"__SITE_NAME__\"\n    }[5m])\n  )\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n- Name: JVM GC Pause (P95)\n- Value: {{ $values.A.Value }} seconds\n- Threshold: > 500ms\n\nImpact:\nLong GC pauses can cause application latency spikes, request timeouts, and reduced \n\nStatus:\nHigh GC pause detected for {{ $labels.instance }}.\nCurrent GC pause: {{ $values.A.Value }} (threshold: 500ms).",
+        "summary": "High GC pause detected in {{ $labels.job }} (P95={{ $values.A.Value }}s)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "aflwlot7ihb0gc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-JVM thread leak",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, host_name, env, site_name) (jvm_thread_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"\n  })\n  -\n  sum by (job, host_name, env, site_name) (jvm_thread_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"\n  } offset 1h)\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    100
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n- Name: JVM Thread Growth\n- Increase: > 100 threads (last 1 hour)\n\nImpact:\nContinuous thread growth indicates a potential thread leak, which can exhaust system resources and lead to service instability or crashes.\n\nStatus:\n- Thread Leak Risk: true",
+        "summary": "Thread growth detected in {{ $labels.job }} (increase > 100 in 1 hour)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cflwmbnqxskjke",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-API Gone Silent",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(sum by (env, http_route) (rate(http_server_request_duration_seconds_count{http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[6h])) < 0.01) and (sum by (env) (rate(http_server_request_duration_seconds_count{http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[12h] offset 6h)) > 0)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "classic_conditions"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n\nName: HTTP Request Rate (EDI API)\nCurrent: < 0.01 requests/sec (last 10 min)\nBaseline: > 0 (previous 1 hour offset)\n\nImpact:\nSudden drop to near-zero traffic indicates potential service outage, routing failure, upstream dependency breakdown, or deployment misconfiguration. This can result in complete API inaccessibility for EDI flows.\n\nStatus:\nAPI Silence Risk: true",
+        "summary": "API silence detected for {{ $labels.job }} (request rate < 0.01 for 10m, previously active)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "fflwnldmkqz28e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-ActiveMQ queue depth",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (host_name, site_name, env, destination) (\n  activemq_message_current_messages{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    destination=~\"GLOBAL.(.*).SCALA.EDI.COORDINATOR.CALLBACK|GLOBAL.(.*).GENERIC.CODEMAP|GLOBAL.(.*).GENERIC.TRANSLATOR|GLOBAL.(.*).INBOUND.DISPATCHER|GLOBAL.(.*).OUTBOUND.CODEMAP|GLOBAL.(.*).TPFREP.EDI.TRANSLATION\"\n  }\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    10,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Site: {{ $labels.site_name }}\nEnv: {{ $labels.env }}\nQueue: {{ $labels.destination }}\n\nMetric:\n\nName: ActiveMQ Queue Depth (Current Messages)\nCondition: > 10 messages pending in EDI queue\n\nImpact:\nA growing backlog in EDI queues indicates that message consumption is slower than production. This leads to delayed EDI processing, increased end-to-end latency, and potential SLA violations across dependent systems.\n\nStatus:\n\nQueue Backlog: HIGH\nSeverity: WARNING (CRITICAL if continuously increasing)",
+        "summary": "High message backlog detected in EDI queue {{ $labels.destination }} (queue depth > 10)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflwoamuppgcga",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-DB pool exhausted",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, env, site_name, host_name) (\n  db_client_connections_pending_requests{\n    job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\",\n    env=\"__ENVIRONMENT__\",\n    site_name=\"__SITE_NAME__\"\n  }\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n\nName: DB Client Connections Pending Requests\nCondition: > 0 (indicates DB connection pool saturation)\n\nImpact:\nPending DB connection requests indicate that the connection pool is exhausted for one or more EDI services. Incoming requests are forced to wait, leading to increased latency, request timeouts, and potential cascading failures across dependent EDI flows.\n\nStatus:\n\nDB Pool Exhaustion Risk: true\nSeverity: CRITICAL",
+        "summary": "DB connection pool pending requests detected in {{ $labels.job }} (pending requests > 0)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfoos36v7vocgf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI Average Code extension latency",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (code_extension_name) (\n    increase(code_extension_name_milliseconds_sum{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      code_extension_name!=\"\",\n      code_extension_name=~\"TOS_API_EXTENSION|TOS_API_EXTENSION_WITH_VALIDATION_CONTEXT|SUBMIT_BAPLIE_FILE|SUBMIT_DIX_IMPORT|DIX_HANDLER\"\n    }[5m])\n  )\n  /\n  sum by (code_extension_name) (\n    increase(code_extension_name_milliseconds_count{\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      code_extension_name!=\"\",\n      code_extension_name=~\"TOS_API_EXTENSION|TOS_API_EXTENSION_WITH_VALIDATION_CONTEXT|SUBMIT_BAPLIE_FILE|SUBMIT_DIX_IMPORT|DIX_HANDLER\"\n    }[5m])\n  )",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3000
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Average latency for code extension {{ $labels.code_extension_name }} has exceeded the configured threshold.\n\nCurrent average latency: {{ $values.A.Value | printf \"%.0f\" }} ms\n\nElevated code extension execution times may increase Invoke Agent and API response times. Please investigate extension logic, database queries, downstream dependencies, and recent application changes.\n\nThreshold: 3000 ms\nCurrent Value: {{ $values.A.Value | printf \"%.0f\" }} ms",
+        "summary": "Average Code Extension Latency High - {{ $labels.code_extension_name }}"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "aflr6irfos5q8b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-Slow-Burn 5xx",
+      "condition": "E",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, http_route, env, site_name) (rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\",\n    http_response_status_code=~\"5..\"\n  }[1h]))\n  /\n  sum by (job, http_route, env, site_name) (rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\"\n  }[1h]))\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, http_route, env, site_name) (rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\",\n    http_response_status_code=~\"5..\"\n  }[6h]))\n  /\n  sum by (job, http_route, env, site_name) (rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\"\n  }[6h]))\n) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nhttp Route: {{ $labels.http_route }}\n\n5xx errors accumulating over time:\n- Rate: {{ $values.A.Value }}\n- Window: 1h and 6h\n\nThis indicates sustained degradation rather than sudden failure.",
+        "summary": "Slow burn 5xx detected for {{ $labels.job }} (rate={{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflps64rhlclcf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-API 4xx spike",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(job, http_route, env, site_name) (rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\", http_route!~\"/zdc/codemap/actuator/health/.*|/zdc/edi/actuator/health/.*|/zdc/tos-gateway/actuator/health/.*|/zdc/coordinator/actuator/health/.*\"}[5m]))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API: {{ $labels.job }}\nRoute: {{ $labels.http_route }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\n4xx Error Rate:\n- Value: {{ $values.A.Value }} req/sec\n- Threshold: > 2\n\nStatus:\nClient error spike detected for {{ $labels.job }}.\nCurrent error rate/count: {{ $values.A.Value }}.\n\nScope:\n- HTTP status: 4xx\n- Service: {{ $labels.job }} \n- Route: {{ $labels.http_route }}",
+        "summary": "4xx error spike detected for {{ $labels.job }} {{ $labels.http_route }} (Rate={{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efmelbvp4vwu8a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-AMQ Degraded Consumer",
+      "condition": "E",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(destination, host_name) (rate(activemq_message_enqueued_messages_total{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"GLOBAL.(.*).SCALA.EDI.COORDINATOR.CALLBACK|GLOBAL.(.*).GENERIC.CODEMAP|GLOBAL.(.*).GENERIC.TRANSLATOR|GLOBAL.(.*).INBOUND.DISPATCHER|GLOBAL.(.*).OUTBOUND.CODEMAP|GLOBAL.(.*).TPFREP.EDI.TRANSLATION\"}[5m])) - (sum by(destination, host_name) (rate(activemq_message_dequeued_messages_total{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"GLOBAL.(.*).SCALA.EDI.COORDINATOR.CALLBACK|GLOBAL.(.*).GENERIC.CODEMAP|GLOBAL.(.*).GENERIC.TRANSLATOR|GLOBAL.(.*).INBOUND.DISPATCHER|GLOBAL.(.*).OUTBOUND.CODEMAP|GLOBAL.(.*).TPFREP.EDI.TRANSLATION\"}[5m])))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(destination, host_name) (activemq_consumer_count_consumers{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"GLOBAL.(.*).SCALA.EDI.COORDINATOR.CALLBACK|GLOBAL.(.*).GENERIC.CODEMAP|GLOBAL.(.*).GENERIC.TRANSLATOR|GLOBAL.(.*).INBOUND.DISPATCHER|GLOBAL.(.*).OUTBOUND.CODEMAP|GLOBAL.(.*).TPFREP.EDI.TRANSLATION\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Queue {{ $labels.destination }} has active consumers but dequeue rate is lagging behind enqueue rate. Consumers may be stalled or processing too slowly.",
+        "summary": "AMQ Zombie Consumer: {{ $labels.destination }}"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfmeln2vkvs3kf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DB pool - long wait time",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(host_name, job) (rate(db_client_connections_wait_time_milliseconds_sum{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"}[5m])) / (sum by(host_name, job) (rate(db_client_connections_wait_time_milliseconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"}[5m])))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    500
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "For {{ $labels.job }} on {{ $labels.host_name }}, average DB connection wait time is {{ $value }} ms in __SITE_NAME__/__ENVIRONMENT__.\n\nThis indicates delay in acquiring database connections from the pool.\n\nPossible causes:\n- Connection pool exhaustion\n- Slow database queries\n- High concurrent load on the service\n\nImpact:\nRequests may experience increased latency or failures due to delays in obtaining DB connections.",
+        "summary": "DB Pool Long Wait Time - {{ $labels.job }}"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "alert_type": "db",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfmelwfzj2adcf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-ActiveMQ Internal queue delay high",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(destination, host_name) (activemq_message_wait_time_avg_milliseconds{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"GLOBAL.(.*).SCALA.EDI.COORDINATOR.CALLBACK|GLOBAL.(.*).GENERIC.CODEMAP|GLOBAL.(.*).GENERIC.TRANSLATOR|GLOBAL.(.*).INBOUND.DISPATCHER|GLOBAL.(.*).OUTBOUND.CODEMAP|GLOBAL.(.*).TPFREP.EDI.TRANSLATION\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    150
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "For {{ $labels.destination }} on {{ $labels.host_name }}, average message wait time is {{ $value }} ms in __SITE_NAME__/__ENVIRONMENT__.\n\nThis indicates increased delay in message consumption from ActiveMQ queues.\n\nPossible causes:\n- Slow or stuck consumers\n- High message backlog\n- Downstream processing latency\n\nImpact:\nMessages may be delayed, leading to slower processing and potential backlog buildup in EDI flows.",
+        "summary": "AMQ Queue Delay High - {{ $labels.destination }}"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffmem5glx0oaoc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-API auth-failure spike",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\",\n    http_response_status_code=~\"401|403\"\n  }[5m]))\n  /\n  sum(rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    http_route=~\"/zdc/coordinator/.*|/zdc/codemap/.*|/zdc/edi/.*|/zdc/tos-gateway/.*|/zodaic/edi/api/v1/transactions/submit|/zodiac/core/vessel-visit/edi-generate/.*|/zodiac/core/api/v1/docex/ops/data|/zodiac/ops/api/v1/equipments/with-doc|/zodiac/core/api/v1/docex/convert/submit|/zodiac/core/vessel-visit/edi-detail/message-recap.*|vessel-visit/edi-detail/stage-file/download\"\n  }[5m]))\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "For {{ $labels.job }}, {{ $value | printf \"%.1f\" }}% of requests are returning 401/403 responses in __SITE_NAME__/__ENVIRONMENT__.\n\nThis indicates an authentication/authorization failure spike in EDI services.\n\nPossible causes:\n- Expired or invalid tokens\n- Authentication service issues\n- Misconfigured roles/permissions\n\nImpact:\nAPI requests may fail, leading to service disruption for clients.",
+        "summary": "API Auth Failure Spike - EDI Api"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afmemaru86bk0b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] EDI-App exception counter rising",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": "dewtw4ftjs8aof"
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name) (count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"} |~ `(?i)(Exception)` != `DEBUG` != `WARN` [5m]))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 3600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": "dewtw4ftjs8aof"
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name) (count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-(edi|tos-gateway|coordinator|codemap)\"} |~ `(?i)(Exception)` != `DEBUG` != `WARN` [5m])) * 2.5",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$A > $B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Message processing errors spiking in {{ $labels.service_name }}",
+        "summary": "App exception counter rising"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "EDI"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efu5zn533mx34a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] Container Down",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "disableTextWrap": false,
+            "editorMode": "code",
+            "expr": "max by(service, node, ip, port, site_name, env) (bos_service_up{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service=~\"tos-gateway|edi|codemap|coordinator\"})\n",
+            "fullMetaSearch": false,
+            "includeNullMetadata": true,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A",
+            "useBackend": false
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "2m",
+      "labels": {
+        "alert_type": "cpu",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "ruleGroup": "__SITE_NAME__-EDI-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

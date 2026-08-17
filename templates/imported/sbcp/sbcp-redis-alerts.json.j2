@@ -1,0 +1,1418 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "redis-sbcp-primary-count",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] Master count abnormal (no-master / split-brain)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count(max by (redis_hostname,redis_instance) (redis_role{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\",role=\"primary\"})) or vector(0)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5,
+                    1.5
+                  ],
+                  "type": "outside_range"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Sentinel-managed HA group (5 instances, 1 expected master)\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\nDistinct masters in group: {{ $values.A.Value }}\nExpected: exactly 1\n\n0 = no master - cluster cannot accept writes (sentinel failover failed or in progress).\n2 = split-brain - two instances both believe they are master.\n\nCovers all 5 instances across both DCs (6680 on all four zap nodes + 6681 on p__SITE_NAME__vdc2zap01). The master may legitimately be any of them. Investigate sentinel state and replication topology immediately.",
+        "summary": "Redis HA group master count abnormal (= {{ $values.A.Value }}, expected 1)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "redis-sbcp-replica-drop",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] Replica count dropped",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "min by (redis_hostname,redis_instance,site_name,env) (redis_slaves_connected{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\"} and on(redis_hostname,redis_instance) (max by (redis_hostname,redis_instance) (redis_role{role=\"primary\"})))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    4
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "10m",
+      "annotations": {
+        "description": "Primary node: {{ $labels.redis_hostname }}\nShard: {{ $labels.redis_instance }}\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\nConnected replicas: {{ $values.A.Value }}\nExpected: 4\n\nImpact: One or more replicas have disconnected from the primary. Reduced redundancy and read capacity; a subsequent primary failure has fewer promotion candidates. Check the disconnected replica nodes and network between them.",
+        "summary": "Redis primary {{ $labels.redis_hostname }} has only {{ $values.A.Value }} replicas connected (expected 4)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "redis-sbcp-latency-p99",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] High p99 command latency",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (redis_hostname,redis_instance,cmd,site_name,env) (redis_cmd_latency_seconds{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\",percentile=\"p99\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.05
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "Instance: {{ $labels.redis_instance }} on {{ $labels.redis_hostname }}\nCommand: {{ $labels.cmd }}\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\np99 latency: {{ $values.A.Value }} s\nThreshold: > 0.05 s (baseline peak ~0.005 s)\n\nImpact: A Redis command is running an order of magnitude slower than normal. Check for slow commands (KEYS, large SCAN), CPU saturation, or memory pressure on this node.",
+        "summary": "Redis high p99 latency on {{ $labels.redis_instance }} cmd={{ $labels.cmd }} ({{ $values.A.Value }}s)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "info",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "redis-sbcp-high-cpu",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] High CPU usage",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (redis_hostname,redis_instance,redis_role,site_name,env) (rate(redis_cpu_time_seconds_total{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\"}[5m]))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.8
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "Instance: {{ $labels.redis_instance }} on {{ $labels.redis_hostname }}\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\nCPU usage: {{ $values.A.Value }} cores\nThreshold: > 0.8 cores (baseline ~0.005)\n\nImpact: This Redis process is consuming most of a CPU core. Redis is single-threaded for command execution, so sustained high CPU directly degrades latency and throughput. Check for expensive commands or a tight client loop.",
+        "summary": "Redis high CPU on {{ $labels.redis_instance }} ({{ $values.A.Value }} cores)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "redis-sbcp-high-memory",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] High memory usage",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (redis_hostname,redis_instance,redis_role,site_name,env) (redis_memory_used_bytes{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    536870912
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "15m",
+      "annotations": {
+        "description": "Instance: {{ $labels.redis_instance }} on {{ $labels.redis_hostname }}\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\nUsed memory: {{ $values.A.Value }} bytes\nThreshold: > 536870912 (512 MiB; baseline ~64 MiB)\n\nNote: maxmemory is unset (0) on these instances, so this is an absolute-bytes alert, not a percentage. Impact: memory growing well beyond normal - check for key accumulation, missing TTLs, or a memory leak before the host runs out of RAM.",
+        "summary": "Redis high memory on {{ $labels.redis_instance }} ({{ $values.A.Value }} bytes)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "info",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "redis-sbcp-blocked-clients",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] High blocked clients",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (redis_hostname,redis_instance,redis_role,site_name,env) (redis_clients_blocked{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    20
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "Instance: {{ $labels.redis_instance }} on {{ $labels.redis_hostname }}\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\nBlocked clients: {{ $values.A.Value }}\nThreshold: > 20 (baseline peak ~1)\n\nImpact: An unusual number of clients are blocked (BLPOP/BRPOP/WAIT or similar). May indicate a stuck consumer, a slow producer, or contention. Investigate client behavior on this instance.",
+        "summary": "Redis high blocked clients on {{ $labels.redis_instance }} ({{ $values.A.Value }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "info",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "redis-sbcp-rejected-conns",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] Rejected connections",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (redis_hostname,redis_instance,redis_role,site_name,env) (rate(redis_connections_rejected_total{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\"}[5m]))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.01
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Instance: {{ $labels.redis_instance }} on {{ $labels.redis_hostname }}\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\nRejected connections rate: {{ $values.A.Value }}/s\nBaseline: 0\n\nImpact: Redis is refusing new connections, typically because maxclients is reached. Application connection attempts are failing. Check the client connection count and maxclients config.",
+        "summary": "Redis rejecting connections on {{ $labels.redis_instance }} ({{ $values.A.Value }}/s)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "redis-sbcp-evictions",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] Key evictions occurring",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (redis_hostname,redis_instance,redis_role,site_name,env) (rate(redis_keys_evicted_total{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\"}[5m]))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.01
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "Instance: {{ $labels.redis_instance }} on {{ $labels.redis_hostname }}\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\nEviction rate: {{ $values.A.Value }} keys/s\nBaseline: 0\n\nNote: maxmemory is 0 (unset) here, so evictions are not expected at all. Any sustained eviction suggests a maxmemory policy was applied or memory pressure is forcing key removal - investigate the instance config and memory usage.",
+        "summary": "Redis evicting keys on {{ $labels.redis_instance }} ({{ $values.A.Value }}/s)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "info",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "redis-sbcp-failover",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] Failover / master switch detected",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 1200,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count(max by (redis_hostname,redis_instance) (max_over_time((redis_role{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\",role=\"primary\"})[15m:1m])))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 1200,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1.5
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "1m",
+      "annotations": {
+        "description": "Sentinel-managed HA group (5 instances)\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\nDistinct instances holding master role in the last 15m: {{ $values.A.Value }}\nNormal: 1\n\nA value > 1 means the master moved between instances - a failover occurred. The new master may be on any node/port (6680 or 6681). This alert self-clears 15m after the topology settles.\n\nConfirm the new master is healthy and replicas have re-synced (see replica-count and replication-lag alerts).",
+        "summary": "Redis HA group failover detected - master role moved ({{ $values.A.Value }} instances master in 15m)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "redis-sbcp-replication-lag",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] Replication lag high",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (redis_hostname,redis_instance,site_name,env) (redis_replication_replica_offset_bytes{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\"}) * -1 + scalar(max(redis_replication_offset_bytes{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\"} and on(redis_hostname,redis_instance) redis_role{role=\"primary\"}))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    52428800
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "Replica instance: {{ $labels.redis_instance }} on {{ $labels.redis_hostname }}\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\nReplication lag: {{ $values.A.Value }} bytes behind the current master\nThreshold: > 52428800 (50 MiB)\n\nLag is measured against whichever instance is currently master (any node/port in the HA group). Impact: this replica is falling behind the master's write stream - reads may be stale and it is a weaker failover candidate. Check network to the master, replica CPU/disk, and write volume.",
+        "summary": "Redis replication lag on replica {{ $labels.redis_instance }}@{{ $labels.redis_hostname }} ({{ $values.A.Value }} bytes behind)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfmly1wht7gg0e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS-BOS] Data Nodes < 5",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "count by(site_name, env) (group by(redis_instance, redis_hostname, site_name, env) (redis_uptime_seconds_total{redis_role=\"data\", redis_instance=~\"redis-6680.*|redis-6681\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    5
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Cluster: {{ $labels.redis_instance }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nRedis Data Nodes:\n- Healthy nodes: {{ $values.A.Value }}\n- Threshold: < 5 nodes\n\nAction: Check Redis cluster health, verify each node is reachable, and review redis_exporter scrape targets.\n\nNote: The 'redis_instance' filter ('redis-6680') was inferred from current scrape targets and may need to be adjusted to match the BOS cluster naming in your environment.",
+        "summary": "BOS Redis Nodes < 5 for cluster {{ $labels.redis_instance }} (count={{ $values.A.Value }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis-bos",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efmly2lgl67eod",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS-BOS] Data Nodes < 3",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count by (site_name, env) (group by (redis_instance, redis_hostname, site_name, env) (redis_uptime_seconds_total{redis_role=\"data\", redis_instance=~\"redis-668.*\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Cluster: {{ $labels.redis_instance }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nRedis Data Nodes:\n- Healthy nodes: {{ $values.A.Value }}\n- Threshold: < 3 nodes\n\nImpact: Redis cluster is severely degraded. Quorum may be lost — Sentinel cannot reliably elect a new primary. Immediate intervention required.\n\nNote: The 'redis_instance' filter ('redis-6680') was inferred and may need adjustment.",
+        "summary": "CRITICAL BOS Redis Nodes < 3 for cluster {{ $labels.redis_instance }} (count={{ $values.A.Value }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis-bos",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfmly3al1wmpsa",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS-BOS] Master not healthy",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count by (site_name, env) (\n  group by (redis_hostname, site_name, env) (\n    redis_role{\n      role=\"primary\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\"\n    }\n  )\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5,
+                    1.5
+                  ],
+                  "type": "outside_range"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "3m",
+      "annotations": {
+        "description": "Cluster: {{ $labels.redis_instance }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nRedis Primary Count:\n- Current primaries: {{ $values.A.Value }}\n- Expected: exactly 1\n\nFires if there are 0 primaries (cluster has no master) or >1 primaries (split-brain scenario). Investigate Sentinel state, network partitions, or failover in progress.\n\nNote: The 'redis_instance' filter ('redis-6680') was inferred and may need adjustment.",
+        "summary": "BOS Redis Master not healthy in {{ $labels.redis_instance }} (primaries={{ $values.A.Value }}, expected=1)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis-bos",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfmly3zme9mgwe",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS-OPS] Data Nodes < 3",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "count by(site_name, env) (group by(redis_instance, redis_hostname, site_name, env) (redis_uptime_seconds_total{redis_role=\"data\", redis_instance=~\"redis-6681.*|redis-6680\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Cluster: {{ $labels.redis_instance }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nRedis Data Nodes:\n- Healthy nodes: {{ $values.A.Value }}\n- Threshold: < 3 nodes\n\nAction: Check OPS Redis cluster health and exporter scrape targets.\n\nNote: The 'redis_instance' filter ('redis-6681') was inferred from current scrape targets. If OPS Redis uses a different cluster name, update the redis_instance regex in the query.",
+        "summary": "OPS Redis Nodes < 3 for cluster {{ $labels.redis_instance }} (count={{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis-ops",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "redis-sbcp-instance-down",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] Data instance down",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 1200,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count by (redis_hostname,redis_instance,site_name,env,redis_role) (redis_uptime_seconds_total{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\",redis_role=\"data\"} offset 15m) unless count by (redis_hostname,redis_instance,site_name,env,redis_role) (redis_uptime_seconds_total{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\",redis_role=\"data\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 1200,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Instance: {{ $labels.redis_instance }}\nNode: {{ $labels.redis_hostname }}\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\nThis data-role Redis instance was reporting 15m ago but has stopped. No collector can scrape it.\n\nImpact: Redis data node unreachable or down. If it was the primary, sentinel should promote a replica - check the failover and replica-count alerts.",
+        "summary": "Redis data instance {{ $labels.redis_instance }} on {{ $labels.redis_hostname }} is down"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "redis-sbcp-sentinel-down",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][REDIS] Sentinel down",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 1200,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count by (redis_hostname,redis_instance,site_name,env,redis_role) (redis_uptime_seconds_total{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\",redis_role=\"sentinel\"} offset 15m) unless count by (redis_hostname,redis_instance,site_name,env,redis_role) (redis_uptime_seconds_total{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\",redis_role=\"sentinel\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 1200,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "1m",
+      "annotations": {
+        "description": "Sentinel instance: {{ $labels.redis_instance }}\nNode: {{ $labels.redis_hostname }}\nEnv: {{ $labels.env }} | Site: {{ $labels.site_name }}\n\nThis Redis Sentinel was reporting 15m ago but has stopped.\n\nImpact: Reduced sentinel quorum. If enough sentinels are lost, automatic failover can no longer be performed. Investigate the sentinel process on this node.",
+        "summary": "Redis Sentinel {{ $labels.redis_instance }} on {{ $labels.redis_hostname }} is down"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-Redis-Alerts",
+        "service": "redis",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

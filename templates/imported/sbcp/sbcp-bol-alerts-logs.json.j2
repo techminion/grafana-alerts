@@ -1,0 +1,1515 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "ffc33227deb3",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]AmqSendFailureLog",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name, host_name) (\n  count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\".*zdc-microservice-unit.*\"}\n    |~ `Failed to send message to (BOL|BACKGROUND)\\..* after .* attempts`\n    [10m])\n) > 0",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} failures publishing to a BOL/BACKGROUND queue after all retries in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Those BOL tasks are lost unless replayed - check broker connectivity from {{ $labels.service_name }}.",
+        "summary": "Failed to send BOL message after retries (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts-Logs",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "5f63952bcee4",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]WebServiceErrorsLog",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name, host_name) (\n  count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\".*zdc-microservice-unit.*\"}\n    |~ `\\[BolWebService\\]( ZodiacSystemException)? ?service error|\\[BolWebService\\] Error looking up vessel visit`\n    [10m])\n) > 5",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} BolWebService downstream errors (core data / report-view / vessel-visit lookups) in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Check core availability, auth token generation and report-view queries.",
+        "summary": "BolWebService downstream errors (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts-Logs",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "1e2053d64740",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]Edi310VesselVisitMissingLog",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name, host_name) (\n  count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-unit.*\"}\n    |~ `\\[EDI310\\] Vessel visit not found`\n    [30m])\n) > 10",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} EDI 310 messages rejected because the vessel visit could not be resolved (imo/voyage/operator) in the last 30 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Likely missing vessel visit master data or a wrong partner mapping - manifests are being dropped.",
+        "summary": "EDI 310 vessel visit not found spike (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts-Logs",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "99c90f1581a0",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]TransactionLogPublishFailuresLog",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name, host_name) (\n  count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-unit.*\"}\n    |~ `\\[BOL_LOG\\] Failed to publish transaction update log`\n    [30m])\n) > 5",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} failures publishing BOL transaction update logs in the last 30 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. BOL audit/processing-log trail is incomplete - troubleshooting and reconciliation will be blind.",
+        "summary": "BOL transaction log publish failures (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts-Logs",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ba904d0636d3",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]GrvNullResponseLog",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name, host_name) (\n  count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-unit.*\"}\n    |~ `\\[GRV-CALL\\] GRV API response is null`\n    [30m])\n) > 5",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "10m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} null GRV API responses from the BOL equipment flow in the last 30 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. /api/v1/bol/equipment results will be empty or partial for callers.",
+        "summary": "GRV API null responses - BOL equipment flow (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts-Logs",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "6c1d6c0932e1",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]ExceptionCounterRising",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by(service_name) (\n    count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-unit.*\"}\n      | detected_level=`error`\n      |~ `(\\[JMS\\]\\[BOL|\\[SUBMIT_MANIFEST\\]|\\[EDI310\\]|\\[EQUIPMENT_VALIDATION\\]|\\[UNIT-HOLD\\]|\\[BOL_LOG\\]|\\[GRV-CALL\\]|\\[BolWebService\\]|Bol[A-Z][A-Za-z]*)`\n      [5m])\n  ) > 10\n)\nand\n(\n  sum by(service_name) (\n    count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-unit.*\"}\n      | detected_level=`error`\n      |~ `(\\[JMS\\]\\[BOL|\\[SUBMIT_MANIFEST\\]|\\[EDI310\\]|\\[EQUIPMENT_VALIDATION\\]|\\[UNIT-HOLD\\]|\\[BOL_LOG\\]|\\[GRV-CALL\\]|\\[BolWebService\\]|Bol[A-Z][A-Za-z]*)`\n      [5m])\n  )\n  >\n  2 *\n  (\n    sum by(service_name) (\n      count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-unit.*\"}\n        | detected_level=`error`\n        |~ `(\\[JMS\\]\\[BOL|\\[SUBMIT_MANIFEST\\]|\\[EDI310\\]|\\[EQUIPMENT_VALIDATION\\]|\\[UNIT-HOLD\\]|\\[BOL_LOG\\]|\\[GRV-CALL\\]|\\[BolWebService\\]|Bol[A-Z][A-Za-z]*)`\n        [1h] offset 5m)\n    ) / 12\n  )\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "BOL error count for {{ $labels.service_name }} has spiked to {{ $value | printf \"%.0f\" }} errors in the last 5 minutes, more than 2x the hourly baseline in __SITE_NAME__/__ENVIRONMENT__. Check logs for the dominant BOL tag ([SUBMIT_MANIFEST], [JMS][BOL-UNIT], [EDI310], [UNIT-HOLD]).",
+        "summary": "BOL exception counter rising (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts-Logs",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "37b006dbff06",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]SubmitManifestFailuresLog",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name, host_name) (\n  count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-unit.*\"}\n    |~ `\\[SUBMIT_MANIFEST\\] (Unexpected exception|Business exception|Constraint violation exception|Invalid message type received)`\n    [10m])\n) > 0",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} SubmitManifestBolProcessor failures in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Manifest messages from BOL.BACKGROUND.TASK.PROCESS.QUEUE are failing to process - BOLs will not be created/updated and the batch task will report errors.",
+        "summary": "BOL Submit Manifest processing failures (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "ALERT_TO_BU": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts-Logs",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "fbd1b8f21bdb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]CandiDispatchFailuresLog",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name, host_name) (\n  count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-unit.*\"}\n    |~ `\\[SUBMIT_MANIFEST\\] (Error dispatching .* units to CANDI|CANDI .* batch API failed)`\n    [10m])\n) > 0",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} failures calling zodiac/candi/api/v1/register-batch-task (or dispatching units to DIX) from the BOL flow in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Units parsed from the manifest are not reaching unit dix-import - manifest is half-applied.",
+        "summary": "BOL to CANDI/DIX dispatch failures (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "ALERT_TO_BU": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts-Logs",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "10ff641d8d97",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]UnitAssociationFailuresLog",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name, host_name) (\n  count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-unit.*\"}\n    |~ `\\[JMS\\]\\[BOL-UNIT(-DISASSOCIATE|-SYNC)?\\] (Unexpected exception|Failed to process (association|disassociation) message|Business exception|Invalid JMS message type)`\n    [10m])\n) > 2",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} BOL-Unit association / disassociation / event-sync failures in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }} (queues BOL.UNIT.QUEUE, BOL.UNIT.DISASSOCIATION.PROCESS.QUEUE, BOL.UNIT.EVENT.PROCESS.QUEUE). Unit-BOL linkage will drift out of sync.",
+        "summary": "BOL-Unit association processing failures (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts-Logs",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "48c74b22ad5a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]HoldPropagationFailingLog",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name, host_name) (\n  count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-unit.*\"}\n    |~ `\\[UNIT-HOLD\\] (Batch API failed|Batch API response is NULL|Exception while calling batch API|Failed to apply hold on UNIT|Failed to serialize request)`\n    [10m])\n) > 0",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} failures applying/releasing a BOL hold on UNIT via the batch API in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Cargo hold state is inconsistent between BOL and UNIT - operational/compliance risk.",
+        "summary": "BOL hold propagation to UNIT failing (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "ALERT_TO_BU": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts-Logs",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "457852c01020",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BOL]EquipmentLookupFailingLog",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(service_name, host_name) (\n  count_over_time({site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=~\"zdc-microservice-unit.*\"}\n    |~ `\\[EQUIPMENT_VALIDATION\\] Failed to query (TOS for active equipment|EQP_EQUIPMENT master data)`\n    [10m])\n) > 0",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value | printf \"%.0f\" }} equipment pre-validation query failures (TOS active equipment / EQP_EQUIPMENT) in the last 10 minutes in __SITE_NAME__/__ENVIRONMENT__ on {{ $labels.host_name }}. Manifest equipment validation is degraded - BOLs may be accepted or rejected on incomplete data.",
+        "summary": "BOL equipment pre-validation lookups failing (__SITE_NAME__/__ENVIRONMENT__)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "environment": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-BOL-Alerts-Logs",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

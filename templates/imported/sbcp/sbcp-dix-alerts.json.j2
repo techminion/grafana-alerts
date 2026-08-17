@@ -1,0 +1,2295 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "efm0uxi7dyz9cd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-Fast-Burn 5xx",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, http_route, env, site_name) (\n  rate(http_server_request_duration_seconds_count{\n    env=\"__ENVIRONMENT__\",\n    site_name=\"__SITE_NAME__\",\n    job=~\"zara-dix-dispatcher-services\",\n    http_response_status_code=~\"5..\"\n  }[5m])\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\n5xx Errors:\n- Error Rate (A): {{ $values.A.Value }} req/sec\n- Threshold: > 0.5 req/sec\n\nStatus:\n- Breach: {{ if gt $values.A.Value 0.5 }}true{{ else }}false{{ end }}",
+        "summary": "Fast-burn 5xx spike detected for {{ $labels.job }} (A={{ $values.A.Value }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efm0ypk8mai2oa",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-JVM long GC pauses > 0.5s",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(\n  0.95,\n  sum by (le, job, env, site_name) (\n    rate(jvm_gc_pause_seconds_bucket{\n      job=\"zara-dix-dispatcher-services\",\n      env=\"__ENVIRONMENT__\",\n      site_name=\"__SITE_NAME__\"\n    }[5m])\n  )\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n- Name: JVM GC Pause (P95)\n- Value: {{ $values.A.Value }} seconds\n- Threshold: > 2s\n\nImpact:\nLong GC pauses can cause application latency spikes, request timeouts, and reduced \n\nStatus:\n- High GC Pause: {{ if gt $values.A.Value 2 }}true{{ else }}false{{ end }}",
+        "summary": "High GC pause detected in {{ $labels.job }} (P95={{ $values.A.Value }}s)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afm0wcinh1y4gc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-JVM heap > 85%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, env, site_name) (\n    jvm_memory_used_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=\"zara-dix-dispatcher-services\"\n    }\n  )\n/\n  sum by (job, env, site_name) (\n    jvm_memory_limit_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=\"zara-dix-dispatcher-services\"\n    }\n  )\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    85
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJVM Heap Memory:\n- Usage: {{ $values.A.Value }}%\n- Threshold: > 85% (Warning)\n\nCalculation:\n(Used Heap / Max Heap) * 100\n\nStatus:\n- Heap Warning: {{ if gt $values.A.Value 85 }}true{{ else }}false{{ end }}",
+        "summary": "Elevated JVM heap usage detected for {{ $labels.job }} (Heap={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfm0x2c5ccjy8b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-Thread Starvation",
+      "condition": "D",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, env, site_name) (\n    jvm_thread_count{\n      job=\"zara-dix-dispatcher-services\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      jvm_thread_state=\"runnable\"\n    }\n  )\n/\n  sum by (job, env, site_name) (\n    jvm_thread_count{\n      job=\"zara-dix-dispatcher-services\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\"\n    }\n  )\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, env, site_name) (\n    jvm_thread_count{\n      job=\"zara-dix-dispatcher-services\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      jvm_thread_state=\"blocked\"\n    }\n  )\n/\n  sum by (job, env, site_name) (\n    jvm_thread_count{\n      job=\"zara-dix-dispatcher-services\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\"\n    }\n  )\n) * 100\nOR on(job, env, site_name) vector(0)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "($B > 10) + ($A > 80)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "C",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nThread Metrics:\n- Blocking % (B): {{ $values.B.Value }}%\n- Runnable % (A): {{ $values.A.Value }}%\n- Threshold: > 10% blocked\n\nStatus:\n- Starvation Risk: {{ if gt $values.B.Value 10 }}true{{ else }}false{{ end }}",
+        "summary": "Thread starvation detected in {{ $labels.job }} (Blocked={{ $values.B.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffm0wffr1r56ob",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-JVM heap > 95%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, env, site_name) (\n    jvm_memory_used_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=\"zara-dix-dispatcher-services\"\n    }\n  )\n/\n  sum by (job, env, site_name) (\n    jvm_memory_limit_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=\"zara-dix-dispatcher-services\"\n    }\n  )\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    95
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "3m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJVM Heap Memory:\n- Usage: {{ $values.A.Value }}%\n- Threshold: > 95%\n\nCalculation:\n(Used Heap / Max Heap) * 100\n\nStatus:\n- Heap Critical: {{ if gt $values.A.Value 95 }}true{{ else }}false{{ end }}",
+        "summary": "High JVM heap memory usage detected for {{ $labels.job }} (Heap={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfm0wmudnkqv4b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-JVM long GC pauses",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(\n  0.95,\n  sum by (le, job, env, site_name) (\n    rate(jvm_gc_pause_seconds_bucket{\n      job=\"zara-dix-dispatcher-services\",\n      env=\"__ENVIRONMENT__\",\n      site_name=\"__SITE_NAME__\"\n    }[5m])\n  )\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1.5
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n- Name: JVM GC Pause (P95)\n- Value: {{ $values.A.Value }} seconds\n- Threshold: > 2s\n\nImpact:\nLong GC pauses can cause application latency spikes, request timeouts, and reduced \n\nStatus:\n- High GC Pause: {{ if gt $values.A.Value 2 }}true{{ else }}false{{ end }}",
+        "summary": "High GC pause detected in {{ $labels.job }} (P95={{ $values.A.Value }}s)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfm0wpgy7ol4wd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-JVM thread leak",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, env, site_name) (\n  increase(jvm_threads_live_threads{\n    job=\"zara-dix-dispatcher-services\",\n    env=\"__ENVIRONMENT__\",\n    site_name=\"__SITE_NAME__\"\n  }[10m])\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    300
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n- Name: JVM Thread Growth\n- Increase: > 300 threads (last 10 min)\n\nImpact:\nContinuous thread growth indicates a potential thread leak, which can exhaust system resources and lead to service instability or crashes.\n\nStatus:\n- Thread Leak Risk: true",
+        "summary": "Thread growth detected in {{ $labels.job }} (increase > 300 in 10m)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afm0wsx5twwzkf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-JVM CPU > 70%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 604800,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "jvm_cpu_recent_utilization_ratio{\n  site_name=\"__SITE_NAME__\",\n  env=\"__ENVIRONMENT__\",\n  job=\"zara-dix-dispatcher-services\"\n} * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    70
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nHost: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJVM CPU Usage:\n- Utilization: {{ $values.A.Value }}%\n- Threshold: > 70%\n\nInstance: {{ $labels.instance }}\n\nStatus:\n- CPU Saturation: {{ if gt $values.A.Value 70 }}true{{ else }}false{{ end }}",
+        "summary": "High JVM CPU saturation detected for {{ $labels.job }} on {{ $labels.host_name }} (CPU={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afm0ww7726olce",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-DB pool - pending requests",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, env, site_name) (\n  db_client_connections_pending_requests{\n    job=\"zara-dix-dispatcher-services\",\n    env=\"__ENVIRONMENT__\",\n    site_name=\"__SITE_NAME__\"\n  }\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n\nName: DB Client Connections Pending Requests\nCondition: > 0 (indicates DB connection pool saturation)\n\nImpact:\nPending DB requests indicate that all available connections in the pool are in use and new requests are waiting. This can lead to increased latency, request timeouts, and cascading failures across EDI services.\n\nStatus:\n\nDB Pool Saturation: TRUE\nSeverity: CRITICAL",
+        "summary": "DB pool pending requests detected in {{ $labels.job }} (pending requests > 0)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfm0wyzhrwu80b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-DB pool exhausted",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, env, site_name) (\n  db_client_connections_pending_requests{\n    job=\"zara-dix-dispatcher-services\",\n    env=\"__ENVIRONMENT__\",\n    site_name=\"__SITE_NAME__\"\n  }\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n\nName: DB Client Connections Pending Requests\nCondition: > 0 (indicates DB connection pool saturation)\n\nImpact:\nPending DB connection requests indicate that the connection pool is exhausted for one or more EDI services. Incoming requests are forced to wait, leading to increased latency, request timeouts, and potential cascading failures across dependent EDI flows.\n\nStatus:\n\nDB Pool Exhaustion Risk: true\nSeverity: CRITICAL",
+        "summary": "DB connection pool pending requests detected in {{ $labels.job }} (pending requests > 0)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfm0x95v1rxmob",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-Frequent container restarts",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by (service_name, env, site_name) (\n  count_over_time(\n    {site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", service_name=\"zara-dix-dispatcher-services\"} \n    |~ \"Started .*Application\"\n  [1h])\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "1m",
+      "annotations": {
+        "description": "Service: {{ $labels.service_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nRestarts:\n- Count (A): {{ $values.A.Value }} in last 1h\n- Threshold: > 2\n\nStatus:\n- Restart Issue: {{ if gt $values.A.Value 2 }}true{{ else }}false{{ end }}",
+        "summary": "Frequent restarts detected for {{ $labels.service_name }} (A={{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfm0xzmxh2s5cb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-5xx Warning",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, http_route, env, site_name) (\n  rate(http_server_request_duration_seconds_count{\n    env=\"__ENVIRONMENT__\",\n    site_name=\"__SITE_NAME__\",\n    job=\"zara-dix-dispatcher-services\",\n    http_response_status_code=~\"5..\"\n  }[5m])\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.05
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "10m",
+      "annotations": {
+        "description": "API: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\n5xx Errors:\n- Error Rate (A): {{ $values.A.Value }} req/sec\n- Threshold: > 0.5 req/sec\n\nStatus:\n- Breach: {{ if gt $values.A.Value 0.5 }}true{{ else }}false{{ end }}",
+        "summary": "Fast-burn 5xx spike detected for {{ $labels.job }} (A={{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfm0xf5o4gu0wb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-API overall p95 latency",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 86400,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(\r\n  0.95,\r\n  sum by (le, http_route, env, site_name) (\r\n    rate(http_server_request_duration_seconds_bucket{\r\n      site_name=\"__SITE_NAME__\",\r\n      env=\"__ENVIRONMENT__\",\r\n      http_route=~\"/zodiac/dix-dispatcher-service/.*\"\r\n    }[5m]\r\n  )\r\n))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    5,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API Route: {{ $labels.http_route }}\n                Env: {{ $labels.env }}\n                Site: {{ $labels.site_name }}\n\n                Latency (P95):\n                - Value: {{ $values.A.Value }} sec\n                - Threshold: > 2 sec\n\n                Calculation:\n                histogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket[2m]))\n\n                Status:\n                - High Latency: {{ if gt $values.A.Value 2 }}true{{ else }}false{{ end }}",
+        "summary": "High P95 latency detected for {{ $labels.http_route }} (P95={{ $values.A.Value }}s)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afm0xi8ai33swc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-API 4xx spike",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, env, site_name) (\n  rate(http_server_request_duration_seconds_count{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    job=\"zara-dix-dispatcher-services\",\n    http_response_status_code=~\"4..\"\n  }[5m])\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    10,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\n4xx Error Rate:\n- Value: {{ $values.A.Value }} req/sec\n- Threshold: > 0\n\nStatus:\n- Client Error Spike: {{ if gt $values.A.Value 0 }}true{{ else }}false{{ end }}\n\nScope:\n- HTTP status: 4xx\n- Service: {{ $labels.job }}",
+        "summary": "4xx error spike detected for {{ $labels.job }} (Rate={{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffm0xktis5lhca",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-API-auth-failure spike",
+      "condition": "A",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (env, job) (rate(traces_span_metrics_calls_total{site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\", job=\"zara-dix-dispatcher-services\", http_response_status_code=\"401\"}[5m])) * 60",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    10,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service {{ $labels.job }} in env {{ $labels.env }} at site ZV8 is returning 401 Unauthorized errors at a rate above 10/minute for the last 5 minutes. Possible credential expiry, token issue, or unauthorized access attempts.",
+        "summary": "HTTP 401 Unauthorized spike on {{ $labels.job }} in env  {{ $labels.env }} ({{ $values.B }}/min)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfm0xnqgo3474e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-Critical-route latency regression",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_requests_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=\"zara-dix-dispatcher-services\", http_route=\"/zodiac/dix-dispatcher-service/api/v1/.*\"}[2m])))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /zodiac/data-model-ext/api/v1/* is {{ $value | printf \"%.3f\" }}s on __SITE_NAME__/__ENVIRONMENT__, exceeding 2s threshold. Immediate investigation required possible DB slowness, GC pressure, or resource exhaustion.",
+        "summary": "Critical-route latency regression"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfm0xuu81t88we",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-Slow-Burn 5xx",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, http_route, env, site_name) (\n  rate(http_server_request_duration_seconds_count{\n    env=\"__ENVIRONMENT__\",\n    site_name=\"__SITE_NAME__\",\n    job=\"zara-dix-dispatcher-services\",\n    http_response_status_code=~\"5..\"\n  }[30m])\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.2
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\n\n5xx errors accumulating over time:\n- Rate: {{ $values.A.Value }}\n- Window: 30m\n\nThis indicates sustained degradation rather than sudden failure.",
+        "summary": "Slow burn 5xx detected for {{ $labels.job }} (rate={{ $values.A.Value }})"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffm0xxrh6aayoc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-JVM heap > 75%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, env, site_name) (\n    jvm_memory_used_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=\"zara-dix-dispatcher-services\"\n    }\n  )\n/\n  sum by (job, env, site_name) (\n    jvm_memory_limit_bytes{\n      jvm_memory_type=\"heap\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\",\n      job=\"zara-dix-dispatcher-services\"\n    }\n  )\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    75
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJVM Heap Memory:\n- Usage: {{ $values.A.Value }}%\n- Threshold: > 85% (Warning)\n\nCalculation:\n(Used Heap / Max Heap) * 100\n\nStatus:\n- Heap Warning: {{ if gt $values.A.Value 85 }}true{{ else }}false{{ end }}",
+        "summary": "Elevated JVM heap usage detected for {{ $labels.job }} (Heap={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfom4be0rj94wb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX Container Down",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (service, node, ip, port, site_name, env) (\r\nbos_service_up{\r\n    site_name=\"__SITE_NAME__\",\r\n    env=\"__ENVIRONMENT__\",\r\n   service=\"dix-dispatcher\"\r\n  }\r\n)\r\n\r\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "2m",
+      "annotations": {
+        "description": "Service: {{ $labels.service_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nContainer Status:\n- Status: DOWN",
+        "summary": "DIX Container CPU Metrics Missing - {{ $labels.service_name }}"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfm0y252p5se8f",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-JVM CPU > 90%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 604800,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "jvm_cpu_recent_utilization_ratio{\n  site_name=\"__SITE_NAME__\",\n  env=\"__ENVIRONMENT__\",\n  job=\"zara-dix-dispatcher-services\"\n} * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    90
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nHost: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJVM CPU Usage:\n- Utilization: {{ $values.A.Value }}%\n- Threshold: > 70%\n\nInstance: {{ $labels.instance }}\n\nStatus:\n- CPU Saturation: {{ if gt $values.A.Value 70 }}true{{ else }}false{{ end }}",
+        "summary": "High JVM CPU saturation detected for {{ $labels.job }} on {{ $labels.host_name }} (CPU={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfm0wa5uj5k3kd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-API Gone Silent",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(sum by (env) (rate(http_server_request_duration_seconds_count{job=\"zara-dix-dispatcher-services\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[10m])) == 0) and (sum by (env) (rate(http_server_request_duration_seconds_count{job=\"zara-dix-dispatcher-services\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[1h] offset 1h)) > 0)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "eq"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n\nName: HTTP Request Rate (Gate API)\nCurrent: < 0.01 requests/sec (last 10 min)\nBaseline: > 0 (previous 1 hour offset)\n\nImpact:\nSudden drop to near-zero traffic indicates potential service outage, routing failure, upstream dependency breakdown, or deployment misconfiguration. This can result in complete API inaccessibility for EDI flows.\n\nStatus:\nAPI Silence Risk: true",
+        "summary": "API silence detected for {{ $labels.job }} (request rate < 0.01 for 10m, previously active)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efm0y4a3ofv9cb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-JVM long GC pauses > 3s",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(\n  0.95,\n  sum by (le, job, env, site_name) (\n    rate(jvm_gc_pause_seconds_bucket{\n      job=\"zara-dix-dispatcher-services\",\n      env=\"__ENVIRONMENT__\",\n      site_name=\"__SITE_NAME__\"\n    }[5m])\n  )\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n- Name: JVM GC Pause (P95)\n- Value: {{ $values.A.Value }} seconds\n- Threshold: > 2s\n\nImpact:\nLong GC pauses can cause application latency spikes, request timeouts, and reduced \n\nStatus:\n- High GC Pause: {{ if gt $values.A.Value 2 }}true{{ else }}false{{ end }}",
+        "summary": "High GC pause detected in {{ $labels.job }} (P95={{ $values.A.Value }}s)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffm0y6ue1dzwgd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-JVM thread leak > 500",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, env, site_name) (\n  increase(jvm_threads_live_threads{\n    job=\"zara-dix-dispatcher-services\",\n    env=\"__ENVIRONMENT__\",\n    site_name=\"__SITE_NAME__\"\n  }[10m])\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    500
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "3m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }} | Env: {{ $labels.env }} | Site: {{ $labels.site_name }} | Thread Growth: > 500 in 10m | Threshold: 500 (Critical). Severe thread leak. Service at risk of resource exhaustion.",
+        "summary": "Critical thread growth in {{ $labels.job }} (increase > 500 in 10m)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffm0y9j7w6vb4d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-JVM thread leak > 100",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, env, site_name) (\n  increase(jvm_threads_live_threads{\n    job=\"zara-dix-dispatcher-services\",\n    env=\"__ENVIRONMENT__\",\n    site_name=\"__SITE_NAME__\"\n  }[10m])\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    100
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "10m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }} | Env: {{ $labels.env }} | Site: {{ $labels.site_name }} | Thread Growth: > 100 in 10m | Threshold: 100. Thread count growing above normal. Monitor for trend.",
+        "summary": "Elevated thread growth in {{ $labels.job }} (increase > 100 in 10m)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfm0ybyrm2pkwf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-API overall p95 latency > 15s",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 86400,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(\r\n  0.95,\r\n  sum by (le, http_route, env, site_name) (\r\n    rate(http_server_request_duration_seconds_bucket{\r\n      site_name=\"__SITE_NAME__\",\r\n      env=\"__ENVIRONMENT__\",\r\n      http_route=~\"/zodiac/dix-dispatcher-service/.*\"\r\n    }[5m]\r\n  )\r\n))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    15,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API Route: {{ $labels.http_route }} | Env: {{ $labels.env }} | Site: {{ $labels.site_name }} | P95 Latency: {{ $values.A.Value }}s | Threshold: > 15s (Critical). Even heavy payload APIs are severely degraded. Possible DB exhaustion, GC thrashing, or resource starvation.",
+        "summary": "Critical P95 latency for {{ $labels.http_route }} (P95={{ $values.A.Value }}s)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffm0yeasbmewwe",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] DIX-API overall p95 latency > 5s",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 86400,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(\r\n  0.95,\r\n  sum by (le, http_route, env, site_name) (\r\n    rate(http_server_request_duration_seconds_bucket{\r\n      site_name=\"__SITE_NAME__\",\r\n      env=\"__ENVIRONMENT__\",\r\n      http_route=~\"/zodiac/dix-dispatcher-service/.*\"\r\n    }[5m]\r\n  )\r\n))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    5,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API Route: {{ $labels.http_route }} | Env: {{ $labels.env }} | Site: {{ $labels.site_name }} | P95 Latency: {{ $values.A.Value }}s | Threshold: > 5s . Even heavy payload APIs are severely degraded. Possible DB exhaustion, GC thrashing, or resource starvation.",
+        "summary": "High P95 latency for {{ $labels.http_route }} (P95={{ $values.A.Value }}s)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-DIX-Alerts",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

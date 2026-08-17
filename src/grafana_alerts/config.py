@@ -65,10 +65,19 @@ def load_site(path: str | Path) -> SiteConfig:
     if not isinstance(raw["groups"], list) or not raw["groups"]:
         raise ConfigError("groups must be a non-empty list")
 
-    grafana_required = ("org_id", "folder_uid", "datasource_uid")
+    grafana_required = ("org_id", "folder_uid")
     missing_grafana = [key for key in grafana_required if key not in raw["grafana"]]
     if missing_grafana:
         raise ConfigError(f"Missing required grafana keys: {', '.join(missing_grafana)}")
+    datasource_uid = raw["grafana"].get("datasource_uid")
+    datasources = raw["grafana"].get("datasources")
+    if not datasource_uid and not isinstance(datasources, dict):
+        raise ConfigError("grafana must define datasource_uid or a datasources mapping")
+    if isinstance(datasources, dict) and not all(
+        isinstance(key, str) and isinstance(value, str)
+        for key, value in datasources.items()
+    ):
+        raise ConfigError("grafana.datasources must be a string-to-string mapping")
 
     groups: list[GroupConfig] = []
     seen_names: set[str] = set()
@@ -105,4 +114,3 @@ def load_site(path: str | Path) -> SiteConfig:
         labels=labels,
         groups=tuple(groups),
     )
-

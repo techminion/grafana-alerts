@@ -2,7 +2,7 @@ parameters:
   - name: site
     displayName: Site configuration to deploy
     type: string
-    default: example
+    default: sbcp
 
 trigger:
   branches:
@@ -38,8 +38,11 @@ steps:
   - script: pytest -q
     displayName: Test
 
-  - script: grafana-alerts validate "sites/${{ parameters.site }}.yaml"
-    displayName: Validate selected site
+  - script: |
+      for site in sites/*.yaml; do
+        grafana-alerts validate "$site"
+      done
+    displayName: Validate all sites
 
   - script: grafana-alerts render "sites/${{ parameters.site }}.yaml" --output "$(Build.ArtifactStagingDirectory)/rendered"
     displayName: Render selected site
@@ -59,4 +62,3 @@ steps:
     env:
       GRAFANA_URL: $(GRAFANA_URL)
       GRAFANA_TOKEN: $(GRAFANA_TOKEN)
-

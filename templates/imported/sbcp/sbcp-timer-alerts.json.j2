@@ -1,0 +1,2229 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "dfltxycbzlybkd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] Fast-Burn 5xx",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 300,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(site_name,env,job,http_route)(\r\n  rate(http_server_request_duration_seconds_count{\r\n    env=\"__ENVIRONMENT__\",\r\n    site_name=\"__SITE_NAME__\",\r\n    job=~\"timer-event.*\",\r\n    http_response_status_code=~\"5..\",\r\n    http_route=~\"/get|/get/.*|/create|/update|/delete|/actuator/health\"\r\n  }[5m])\r\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.5
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "API: {{ $labels.http_route }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\n5xx Errors:\n- Error Rate (A): {{ $values.A.Value }} req/sec\n- Threshold: > 0.5 req/sec\n\nStatus:\n- Breach: {{ if gt $values.A.Value 0.5 }}true{{ else }}false{{ end }}",
+        "summary": "Fast-burn 5xx spike detected for {{ $labels.job }} (A={{ $values.A.Value }})"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflu464mlp4hsd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] JVM heap > 85%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\r\n  sum by (job, env, site_name,host_name) (\r\n    jvm_memory_used_bytes{\r\n      jvm_memory_type=\"heap\",\r\n      site_name=\"__SITE_NAME__\",\r\n      env=\"__ENVIRONMENT__\",\r\n      job=~\"timer-event.*\"\r\n    }\r\n  )*100)\r\n/\r\n  (sum by (job, env, site_name,host_name) (\r\n    jvm_memory_limit_bytes{\r\n      jvm_memory_type=\"heap\",\r\n      site_name=\"__SITE_NAME__\",\r\n      env=\"__ENVIRONMENT__\",\r\n      job=~\"timer-event.*\"\r\n    }\r\n  )\r\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    85
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJVM Heap Memory:\n- Usage: {{ $values.A.Value }}%\n- Threshold: > 95%\n\nCalculation:\n(Used Heap / Max Heap) * 100\n\nStatus:\n- Heap Critical: {{ if gt $values.A.Value 95 }}true{{ else }}false{{ end }}",
+        "summary": "High JVM heap memory usage detected for {{ $labels.job }} (Heap={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflu52g9zc5xce",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] Thread Starvation",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "(\r\n  sum by (job,site_name,env,host_name)(jvm_thread_count{job=~\"timer-event.*\", site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\", jvm_thread_state=\"runnable\"})\r\n  /\r\n  sum by (job,site_name,env,host_name)(jvm_thread_count{job=~\"timer-event.*\", site_name=\"__SITE_NAME__\",env=\"__ENVIRONMENT__\"})\r\n) * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\r\n  sum by (job,site_name,env,host_name)(jvm_thread_count{job=~\"timer-event.*\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", jvm_thread_state=\"blocked\"})\r\n  /\r\n  (sum by (job,site_name,env,host_name)(jvm_thread_count{job=~\"timer-event.*\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})\r\n) * 100) or on (site_name,env,job) vector(0)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    10,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    60,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nThread Metrics:\n- Blocking % (B): {{ $values.B.Value }}%\n- Runnable % (A): {{ $values.A.Value }}%\n- Threshold: > 10% blocked\n\nStatus:\n- Starvation Risk: {{ if gt $values.B.Value 10 }}true{{ else }}false{{ end }}",
+        "summary": "Thread starvation detected in {{ $labels.job }} (Blocked={{ $values.B.Value }}%)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dflucy4hpzx8gf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] ActiveMQ Internal queue backlog",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 2592000,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "activemq_message_current_messages{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=\"__SITE_NAME__.__ENVIRONMENT__.Event.Timer\"}",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    50
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Env: {{ $labels.env }}\nSite: {{ $labels.site_name }}\nQueue: {{ $labels.destination }}\n\nQueue Backlog:\n- Value: {{ $values.A.Value }} messages\n- Threshold: > 50\n\nStatus:\n- Backlog: {{ if gt $values.A.Value 50.0 }}true{{ else }}false{{ end }}",
+        "summary": "Timer Service - ActiveMQ queue backlog detected"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflu6akforda8c",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] JVM CPU saturated",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "jvm_cpu_recent_utilization_ratio{\r\n  site_name=\"__SITE_NAME__\",\r\n  env=\"__ENVIRONMENT__\",\r\n  job=~\"timer-event\"\r\n} * 100",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    70
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nHost: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJVM CPU Usage:\n- Utilization: {{ $values.A.Value }}%\n- Threshold: > 70%\n\nInstance: {{ $labels.instance }}\n\nStatus:\n- CPU Saturation: {{ if gt $values.A.Value 70 }}true{{ else }}false{{ end }}",
+        "summary": "High JVM CPU saturation detected for {{ $labels.job }} on {{ $labels.host_name }} (CPU={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "fflu803kx5vk0e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] Critical-route latency regression",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(\r\n  0.95,\r\n  sum by (site_name,env,le,host_name) (\r\n    rate(http_server_request_duration_seconds_bucket{\r\n      site_name=\"__SITE_NAME__\",\r\n      env=\"__ENVIRONMENT__\",\r\n      job=~\"timer-event\",\r\n      http_route=~\"/create|/update|/delete\"\r\n    }[2m])\r\n  )\r\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API Route: {{ $labels.http_route }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nLatency (P95):\n- Value: {{ $values.A.Value }} sec\n- Threshold: > 2 sec\n\nCalculation:\nhistogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket{http_route=~\"/create|/update|/delete\"}[$__rate_interval]))\n\nStatus:\n- High Latency: {{ if gt $values.A.Value 2.0 }}true{{ else }}false{{ end }}",
+        "summary": "Critical P95 Latency - Timer API ({{ $labels.site_name }}/{{ $labels.env }})"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "fflwjnc5noykgc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] JVM long GC pauses",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 1800,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.99,\r\n  sum by (site_name,env,job,le,host_name) (\r\n    rate(jvm_gc_duration_seconds_bucket{\r\n      site_name=\"__SITE_NAME__\",\r\n      env=\"__ENVIRONMENT__\",\r\n      job=~\"timer-event\",\r\n\t    jvm_gc_name=\"G1 Young Generation\"\r\n    }[5m])\r\n  )\r\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.3
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nHost: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\nGC Pause:\n- P99 Duration: {{ $values.A.Value }}ms\n- Threshold: > 1000ms\nInstance: {{ $labels.instance }}",
+        "summary": "Long GC pause detected for {{ $labels.job }} on {{ $labels.host_name }} (P99 GC={{ $values.A.Value }}ms)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dflwm3dbdih34a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] Message processing errors rising",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (site_name,env)(rate(scheduler_jms_send_failures_count_total{\r\n  site_name=\"__SITE_NAME__\",\r\n  env=\"__ENVIRONMENT__\"\r\n}[5m])) or vector(0)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "Env: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJMS Send Failures:\n- Value: {{ $values.A.Value }} failures/sec\n- Threshold: > 0\n\nStatus:\n- JMS Failing: {{ if gt $values.A.Value 0.0 }}true{{ else }}false{{ end }}",
+        "summary": "Timer Service - JMS send failures detected"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dflwmp6pa718gb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] ActiveMQ consumer count",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 10800,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "activemq_consumer_count_consumers{\r\n  site_name=\"__SITE_NAME__\",\r\n  env=\"__ENVIRONMENT__\",\r\n  destination=~\"__SITE_NAME__.__ENVIRONMENT__.Event.Timer\",\r\n  job=\"((activemq/activemq-be-1)|(activemq/activemq-be-2))\"\r\n}",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "eq"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Queue {{ $labels.destination }} has no active consumers on ({{ $labels.site_name}}/{{ $labels.env }}). Messages will accumulate until consumers reconnect.",
+        "summary": "AMQ No Consumers - Timer Queue ({{ $labels.site_name}}/{{ $labels.env }})"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflwnsx0l3qwwb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] JVM thread leak",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\r\n  sum by (job,site_name,env, host_name) (jvm_thread_count{\r\n    site_name=\"__SITE_NAME__\",\r\n    env=\"__ENVIRONMENT__\",\r\n    job=~\"timer-event\"\r\n  })\r\n  -\r\n  sum by (job,site_name,env, host_name) (jvm_thread_count{\r\n    site_name=\"__SITE_NAME__\",\r\n    env=\"__ENVIRONMENT__\",\r\n    job=~\"timer-event\"\r\n  } offset 1h)\r\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    50
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Env: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJVM Thread Count:\n- Value: {{ $values.A.Value }}\n- Threshold: > 200\n- Normal range: 150-200 (100 Quartz TIMER-* + Tomcat + HikariCP + system)\n\nStatus:\n- Thread Leak: {{ if gt $values.A.Value 200.0 }}true{{ else }}false{{ end }}",
+        "summary": "Timer Service - Possible JVM thread leak detected"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cflwuon20ms5ca",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] ActiveMQ Internal queue delay high",
+      "condition": "D",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 300,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(destination, env, site_name) (\r\n    activemq_message_wait_time_avg_milliseconds{\r\n      site_name=\"__SITE_NAME__\",\r\n      env=\"__ENVIRONMENT__\",\r\n      destination=\"__SITE_NAME__.__ENVIRONMENT__.Event.Timer\"\r\n    }\r\n  )",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(destination, env, site_name) (\n  rate(activemq_message_enqueued_messages_total{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    destination=\"__SITE_NAME__.__ENVIRONMENT__.Event.Timer\"\n  }[5m])\n)\n>\nsum by(destination, env, site_name) (\n  rate(activemq_message_dequeued_messages_total{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    destination=\"__SITE_NAME__.__ENVIRONMENT__.Event.Timer\"\n  }[5m])\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    30000
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Env: {{ $labels.env }}\nSite: {{ $labels.site_name }}\nQueue: {{ $labels.destination }}\n\nQueue Delay:\n- Value: {{ $values.A.Value }} ms\n- Threshold: > 3000 ms (3 seconds)\n\nStatus:\n- High Delay: {{ if gt $values.A.Value 5000.0 }}true{{ else }}false{{ end }}",
+        "summary": "Timer Service - ActiveMQ queue delay high"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bflwy2zsmbwn4e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] DB pool-long wait time",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 3600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (site_name,env)(rate(db_client_connections_wait_time_milliseconds_sum{\r\n  site_name=\"__SITE_NAME__\",\r\n  env=\"__ENVIRONMENT__\",\r\n  job=~\"timer-event.*\"\r\n}[5m]))\r\n/\r\nsum by (site_name,env)(rate(db_client_connections_wait_time_milliseconds_count{\r\n  site_name=\"__SITE_NAME__\",\r\n  env=\"__ENVIRONMENT__\",\r\n  job=~\"timer-event.*\"\r\n}[5m]))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    500
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Env: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nDB Connection Wait Time:\n- Value: {{ $values.A.Value }} ms\n- Threshold: > 100 ms\n\nStatus:\n- Long Wait: {{ if gt $values.A.Value 100.0 }}true{{ else }}false{{ end }}",
+        "summary": "Timer Service - DB connection wait time exceeded threshold"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "fflww6iy5u1hcc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] DB pool-pending requests",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 21600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, env, site_name,host_name) (\r\n  db_client_connections_pending_requests{\r\n    job=~\"timer-event\",\r\n    env=\"__ENVIRONMENT__\",\r\n    site_name=\"__SITE_NAME__\"\r\n  }\r\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n\nName: DB Client Connections Pending Requests\nCondition: > 0 (indicates DB connection pool saturation)\n\nImpact:\nPending DB requests indicate that all available connections in the pool are in use and new requests are waiting. This can lead to increased latency, request timeouts, and cascading failures across EDI services.\n\nStatus:\n\nDB Pool Saturation: TRUE\nSeverity: CRITICAL",
+        "summary": "DB pool pending requests detected in {{ $labels.job }} (pending requests > 0)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflwwfdw9lddsa",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] DB pool exhausted",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (job, env, site_name,host_name) (\r\n  db_client_connections_pending_requests{\r\n    job=~\"timer-event\",\r\n    env=\"__ENVIRONMENT__\",\r\n    site_name=\"__SITE_NAME__\"\r\n  }\r\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMetric:\n\nName: DB Client Connections Pending Requests\nCondition: > 0 (indicates DB connection pool saturation)\n\nImpact:\nPending DB connection requests indicate that the connection pool is exhausted for one or more Timer services. Incoming requests are forced to wait, leading to increased latency, request timeouts, and potential cascading failures across dependent Timer flows.\n\nStatus:\n\nDB Pool Exhaustion Risk: true\nSeverity: CRITICAL",
+        "summary": "DB connection pool pending requests detected in {{ $labels.job }} (pending requests > 0)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflxbvt01hwjkf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] API Auth Failure Spike",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (site_name,env,job)(\r\n  rate(http_server_request_duration_seconds_count{\r\n    site_name=\"__SITE_NAME__\",\r\n    env=\"__ENVIRONMENT__\",\r\n    job=~\"timer-event\",\r\n    http_response_status_code=~\"401|403\"\r\n  }[5m])\r\n) * 60",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\nAuth Failures:\n- Current rate: {{ $values.A.Value }} req/min\n- Threshold: > 5 req/min\n- Status codes: 401 (Unauthorized) and 403 (Forbidden)\nAction:\n1. Check for brute force or credential stuffing attacks\n2. Review which endpoints are being hit\n3. Check for expired tokens or misconfigured clients\n4. Consider rate limiting if attack suspected\nInstance: {{ $labels.instance }}",
+        "summary": "Auth failure spike detected for {{ $labels.job }} on {{ $labels.host_name }} (Rate={{ $values.A.Value }} req/min)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bflu012zy5a0wd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] Slow-Burn 5xx",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(site_name,env,job,http_route)(\r\n  rate(http_server_request_duration_seconds_count{\r\n    env=\"__ENVIRONMENT__\",\r\n    site_name=\"__SITE_NAME__\",\r\n    job=~\"timer-event.*\",\r\n    http_response_status_code=~\"5..\",\r\n    http_route=~\"/get|/get/.*|/create|/update|/delete|/actuator/health\"\r\n  }[30m])\r\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0.2
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "API: {{ $labels.http_route }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\n5xx Errors:\n- Error Rate (A): {{ $values.A.Value }} req/sec\n- Threshold: > 0.5 req/sec\n\nStatus:\n- Breach: {{ if gt $values.A.Value 0.5 }}true{{ else }}false{{ end }}",
+        "summary": "Slow-burn 5xx spike detected for {{ $labels.job }} (A={{ $values.A.Value }})"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afm06wghd416of",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] App exception counter rising",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 604800,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by (service_name,site_name,env)(\r\n  count_over_time(\r\n  {site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", filename=~\".*timer-event.*\", service_name=~\"timer-event\"}\r\n  |= \"ERROR\"\r\n  != \"DEBUG\"\r\n  != \"WARN\"\r\n  !~ \".*was not found in this ResultSet.*\"\r\n  !~ \"conversion to class java.time.Instant from timestamp not supported\"\r\n[5m]))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 300,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "loki",
+              "uid": [[ grafana.datasources.loki | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by (service_name,site_name,env)(count_over_time(\r\n  {site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", filename=~\".*timer-event.*\", service_name=~\"timer-event\"}\r\n  |= \"ERROR\"\r\n  != \"DEBUG\"\r\n  != \"WARN\"\r\n  !~ \".*was not found in this ResultSet.*\"\r\n  !~ \"conversion to class java.time.Instant from timestamp not supported\"\r\n[5m] offset 1h)) * 2.5",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "C",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "($C > 10) && ($C> $E)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "E",
+            "settings": {
+              "mode": "replaceNN",
+              "replaceWithValue": 0
+            },
+            "type": "reduce"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Message processing errors spiking in {{ $labels.service_name }}\n\nSite: {{ $labels.site_name }}\nEnv: {{ $labels.env }}",
+        "summary": "App exception counter rising"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfm0t35nttczkb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] Container Down",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 10800,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (service, node, ip, port, site_name, env) (\r\n  bos_service_up{\r\n    site_name=\"__SITE_NAME__\",\r\n    env=\"__ENVIRONMENT__\",\r\n    service=~\"timer-event\"\r\n  }\r\n)\r\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "2m",
+      "annotations": {
+        "description": "Service: {{ $labels.service_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nContainer Status:\n- Status: DOWN\n- No CPU metrics received for > 10 minute\n\nImpact:\n- All timer jobs stopped\n- API endpoints unreachable\n- JMS events not being published\n- Downstream systems not receiving timer events",
+        "summary": "Timer Container CPU Metrics Missing - {{ $labels.service_name }}"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "aflu2qjoqlszke",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] API overall p95 latency",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 2592000,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "histogram_quantile(\r\n  0.95,\r\n  sum by (site_name,env,le,host_name,http_route) (\r\n    rate(http_server_request_duration_seconds_bucket{\r\n      site_name=\"__SITE_NAME__\",\r\n      env=\"__ENVIRONMENT__\",\r\n      job=~\"timer-event.*\",\r\n      http_route=~\"/get|/get/.*|/create|/update|/delete|/actuator/health\"\r\n    }[5m]\r\n  )\r\n))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "API Route: {{ $labels.http_route }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nLatency (P95):\n- Value: {{ $values.A.Value }} sec\n- Threshold: > 2 sec\n\nCalculation:\nhistogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket[2m]))\n\nStatus:\n- High Latency: {{ if gt $values.A.Value 2 }}true{{ else }}false{{ end }}",
+        "summary": "High P95 latency detected for {{ $labels.http_route }} (P95={{ $values.A.Value }}s)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "eflu3a6tosn40d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] API 4xx spike",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 604800,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(site_name,env,job,http_route)(\r\n  rate(http_server_request_duration_seconds_count{\r\n    env=\"__ENVIRONMENT__\",\r\n    site_name=\"__SITE_NAME__\",\r\n    job=~\"timer-event.*\",\r\n    http_response_status_code=~\"4..\",\r\n    http_route=~\"/get|/get/.*|/create|/update|/delete|/actuator/health\"\r\n  }[5m])\r\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Route: {{ $labels.http_route }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\n4xx Error Rate:\n- Value: {{ $values.A.Value }} req/sec\n- Threshold: > 0\n\nStatus:\n- Client Error Spike: {{ if gt $values.A.Value 0 }}true{{ else }}false{{ end }}\n\nScope:\n- HTTP status: 4xx\n- Service: {{ $labels.job }}",
+        "summary": "4xx error spike detected for {{ $labels.job }} {{ $labels.http_route }} (Rate={{ $values.A.Value }})"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dflu3wpxhu9dsd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] JVM heap > 95%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\r\n  sum by (job, env, site_name,host_name) (\r\n    jvm_memory_used_bytes{\r\n      jvm_memory_type=\"heap\",\r\n      site_name=\"__SITE_NAME__\",\r\n      env=\"__ENVIRONMENT__\",\r\n      job=~\"timer-event.*\"\r\n    }\r\n  )*100)\r\n/\r\n  (sum by (job, env, site_name,host_name) (\r\n    jvm_memory_limit_bytes{\r\n      jvm_memory_type=\"heap\",\r\n      site_name=\"__SITE_NAME__\",\r\n      env=\"__ENVIRONMENT__\",\r\n      job=~\"timer-event.*\"\r\n    }\r\n  )\r\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    95
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Service: {{ $labels.job }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nJVM Heap Memory:\n- Usage: {{ $values.A.Value }}%\n- Threshold: > 95%\n\nCalculation:\n(Used Heap / Max Heap) * 100\n\nStatus:\n- Heap Critical: {{ if gt $values.A.Value 95 }}true{{ else }}false{{ end }}",
+        "summary": "High JVM heap memory usage detected for {{ $labels.job }} (Heap={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Timer-Alerts",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfsrlu66s40lce",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][TIMER] ActiveMQ connection Failure",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.loki | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (service_name,site_name,env)(\r\n  count_over_time(\r\n  {site_name=\"__SITE_NAME__\", env=\"UAT\", filename=~\".*timer-event.*\", service_name=~\"timer-event\",level=\"ERROR\"}\r\n  |= \"ConnectException\"\r\n  |= \"ConnectionFailedException\"\r\n[5m]))",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "queryType": "instant",
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "queryType": "expression",
+          "relativeTimeRange": {
+            "from": 0,
+            "to": 0
+          },
+          "datasourceUid": "__expr__",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "Getting connection error in {{ $labels.service_name }}\n\nSite: {{ $labels.site_name }}\nEnv: {{ $labels.env }}",
+        "summary": "ActiveMQ connection Failure"
+      },
+      "isPaused": false,
+      "notification_settings": {
+        "receiver": "ZBPD - Foundation"
+      },
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}
