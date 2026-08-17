@@ -1,0 +1,172 @@
+# This template renders the JSON-compatible YAML accepted by Grafana's
+# create/update rule-group provisioning endpoint.
+title: [[ group.name | tojson ]]
+folderUid: [[ grafana.folder_uid | tojson ]]
+interval: [[ defaults.evaluation_interval_seconds ]]
+rules:
+  - uid: [[ (group.uid_prefix ~ '-cpu-high') | tojson ]]
+    title: High CPU usage
+    ruleGroup: [[ group.name | tojson ]]
+    folderUID: [[ grafana.folder_uid | tojson ]]
+    orgId: [[ grafana.org_id ]]
+    condition: C
+    data:
+      - refId: A
+        queryType: ""
+        relativeTimeRange:
+          from: [[ defaults.query_window_seconds ]]
+          to: 0
+        datasourceUid: [[ grafana.datasource_uid | tojson ]]
+        model:
+          datasource:
+            type: prometheus
+            uid: [[ grafana.datasource_uid | tojson ]]
+          editorMode: code
+          expr: [[ group.cpu_query | tojson ]]
+          instant: false
+          intervalMs: 1000
+          legendFormat: "{{ instance }}"
+          maxDataPoints: 43200
+          range: true
+          refId: A
+      - refId: B
+        queryType: ""
+        relativeTimeRange:
+          from: 0
+          to: 0
+        datasourceUid: __expr__
+        model:
+          conditions: []
+          datasource:
+            type: __expr__
+            uid: __expr__
+          expression: A
+          intervalMs: 1000
+          maxDataPoints: 43200
+          reducer: last
+          refId: B
+          type: reduce
+      - refId: C
+        queryType: ""
+        relativeTimeRange:
+          from: 0
+          to: 0
+        datasourceUid: __expr__
+        model:
+          conditions:
+            - evaluator:
+                params:
+                  - [[ group.cpu_threshold_percent ]]
+                type: gt
+              operator:
+                type: and
+              query:
+                params:
+                  - C
+              reducer:
+                params: []
+                type: last
+              type: query
+          datasource:
+            type: __expr__
+            uid: __expr__
+          expression: B
+          intervalMs: 1000
+          maxDataPoints: 43200
+          refId: C
+          type: threshold
+    noDataState: [[ defaults.no_data_state | tojson ]]
+    execErrState: [[ defaults.exec_error_state | tojson ]]
+    for: [[ group.pending_for | default(defaults.pending_for) | tojson ]]
+    annotations:
+      summary: "High CPU usage on {{ $labels.instance }}"
+      description: "CPU usage is above [[ group.cpu_threshold_percent ]]% on {{ $labels.instance }}. Current value: {{ $values.B.Value }}%."
+    labels:
+{% for key, value in labels.items() %}
+      [[ key ]]: [[ value | tojson ]]
+{% endfor %}
+      severity: [[ group.cpu_severity | default("warning") | tojson ]]
+
+  - uid: [[ (group.uid_prefix ~ '-memory-high') | tojson ]]
+    title: High memory usage
+    ruleGroup: [[ group.name | tojson ]]
+    folderUID: [[ grafana.folder_uid | tojson ]]
+    orgId: [[ grafana.org_id ]]
+    condition: C
+    data:
+      - refId: A
+        queryType: ""
+        relativeTimeRange:
+          from: [[ defaults.query_window_seconds ]]
+          to: 0
+        datasourceUid: [[ grafana.datasource_uid | tojson ]]
+        model:
+          datasource:
+            type: prometheus
+            uid: [[ grafana.datasource_uid | tojson ]]
+          editorMode: code
+          expr: [[ group.memory_query | tojson ]]
+          instant: false
+          intervalMs: 1000
+          legendFormat: "{{ instance }}"
+          maxDataPoints: 43200
+          range: true
+          refId: A
+      - refId: B
+        queryType: ""
+        relativeTimeRange:
+          from: 0
+          to: 0
+        datasourceUid: __expr__
+        model:
+          conditions: []
+          datasource:
+            type: __expr__
+            uid: __expr__
+          expression: A
+          intervalMs: 1000
+          maxDataPoints: 43200
+          reducer: last
+          refId: B
+          type: reduce
+      - refId: C
+        queryType: ""
+        relativeTimeRange:
+          from: 0
+          to: 0
+        datasourceUid: __expr__
+        model:
+          conditions:
+            - evaluator:
+                params:
+                  - [[ group.memory_threshold_percent ]]
+                type: gt
+              operator:
+                type: and
+              query:
+                params:
+                  - C
+              reducer:
+                params: []
+                type: last
+              type: query
+          datasource:
+            type: __expr__
+            uid: __expr__
+          expression: B
+          intervalMs: 1000
+          maxDataPoints: 43200
+          refId: C
+          type: threshold
+    noDataState: [[ defaults.no_data_state | tojson ]]
+    execErrState: [[ defaults.exec_error_state | tojson ]]
+    for: [[ group.pending_for | default(defaults.pending_for) | tojson ]]
+    annotations:
+      summary: "High memory usage on {{ $labels.instance }}"
+      description: "Memory usage is above [[ group.memory_threshold_percent ]]% on {{ $labels.instance }}. Current value: {{ $values.B.Value }}%."
+    labels:
+{% for key, value in labels.items() %}
+      [[ key ]]: [[ value | tojson ]]
+{% endfor %}
+      severity: [[ group.memory_severity | default("warning") | tojson ]]
+
