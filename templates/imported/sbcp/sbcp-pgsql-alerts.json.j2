@@ -1,0 +1,1639 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "dfoldqgzgym0wa",
+      "title": "[__SITE_NAME__][PGSQL] Lock Saturation High",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max_over_time(postgresql_locks_saturation_pct{site_name=\"__SITE_NAME__\", env=~\".*\"}[5m])",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    75
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "PostgreSQL lock saturation is {{ $values.A.Value }}% on {{ $labels.postgresql_instance }} ({{ $labels.postgresql_hostname }}).\n\nThe database has exceeded 75% of available locks for more than 1 min.",
+        "summary": "PostgreSQL lock saturation exceeded 75%"
+      },
+      "labels": {
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-pgsql-txid-consumed-75",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] TXID Consumed per Database Warning (>75%)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "max by(database, postgresql_instance, env, site_name, host_name) (postgresql_txid_database_pct_consumed{site_name=\"__SITE_NAME__\", postgresql_hostname=~\"M.*\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    75
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "Transaction ID consumption is {{ $values.A.Value }}% on database '{{ $labels.database }}', host {{ $labels.host_name }}. Risk of wraparound; check autovacuum.",
+        "summary": "TXID consumed >75% on db {{ $labels.database }} ({{ $labels.postgresql_instance }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-pgsql-mxid-consumed-75",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] MXID Consumed per Database warning(>75%)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "max by(database, postgresql_instance, env, site_name, host_name) (postgresql_mxid_database_pct_consumed{site_name=\"__SITE_NAME__\", postgresql_hostname=~\"M.*\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    75
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "Multixact ID consumption is {{ $values.A.Value }}% on database '{{ $labels.database }}', host {{ $labels.host_name }}. Risk of multixact wraparound.",
+        "summary": "MXID consumed >75% on db {{ $labels.database }} ({{ $labels.postgresql_instance }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-connection-count",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] High Connection Count (>800)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "sum by(postgresql_instance, env, site_name, host_name) (postgresql_backends{site_name=\"__SITE_NAME__\", postgresql_hostname=~\"M.*\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    800
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "2m",
+      "annotations": {
+        "description": "PostgreSQL backend connections exceeded 800 on instance '{{ $labels.postgresql_instance }}' (host {{ $labels.host_name }}).",
+        "summary": "High PostgreSQL Connection Count on {{ $labels.postgresql_instance }}"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-pgsql-instance-down",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] PostgreSQL Instance Down (no metrics 5m)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 4500,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "count by (postgresql_instance, postgresql_hostname, env, site_name) (\n  last_over_time(postgresql_backends{site_name=\"__SITE_NAME__\", postgresql_hostname=~\"P.*\"}[1h] offset 5m)\n)\nunless\ncount by (postgresql_instance, postgresql_hostname, env, site_name) (\n  last_over_time(postgresql_backends{site_name=\"__SITE_NAME__\", postgresql_hostname=~\"P.*\"}[5m])\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "2m",
+      "annotations": {
+        "description": "No PostgreSQL metrics received from instance '{{ $labels.postgresql_instance }}' on host {{ $labels.host_name }} for over 5 minutes, although it was reporting within the last hour. The database may be down, unreachable, or the OTel collector scrape against it is failing. Immediate investigation required.",
+        "summary": "PostgreSQL instance DOWN: {{ $labels.postgresql_instance }} (host {{ $labels.host_name }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efrkw9oj7ma68c",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] TXID Consumed per Database Critical (>90%) ",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "max by(database, postgresql_instance, env, site_name, host_name) (postgresql_txid_database_pct_consumed{site_name=\"__SITE_NAME__\", postgresql_hostname=~\"M.*\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    90
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "Transaction ID consumption is {{ $values.A.Value }}% on database '{{ $labels.database }}', host {{ $labels.host_name }}. Risk of wraparound; check autovacuum.",
+        "summary": "TXID consumed >90% on db {{ $labels.database }} ({{ $labels.postgresql_instance }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfrkwmbaowe80f",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] MXID Consumed per Database Critical(>90%)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "max by(database, postgresql_instance, env, site_name, host_name) (postgresql_mxid_database_pct_consumed{site_name=\"__SITE_NAME__\", postgresql_hostname=~\"M.*\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    90
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "Multixact ID consumption is {{ $values.A.Value }}% on database '{{ $labels.database }}', host {{ $labels.host_name }}. Risk of multixact wraparound.",
+        "summary": "MXID consumed >90% on db {{ $labels.database }} ({{ $labels.postgresql_instance }})"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efolp6mjf54aob",
+      "title": "[__SITE_NAME__][PGSQL] Long Running Session Detected",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max_over_time(postgresql_long_running_session_count{site_name=\"__SITE_NAME__\", env=~\".*\"}[5m])",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "50m",
+      "annotations": {
+        "description": "One or more PostgreSQL sessions have been active for more than 5 minutes.\n\nCurrent count: {{ $values.A.Value }}\n\nInstance: {{ $labels.postgresql_instance }}\nHost: {{ $labels.postgresql_hostname }}\nEnvironment: {{ $labels.env }}\nSite: {{ $labels.site_name }}",
+        "summary": "PostgreSQL long running session detected on {{ $labels.postgresql_instance }}"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-pgsql-replslot-lag-fivetran",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] Replication Slot Lag - fivetran (>500MB)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "max by(slot_name, postgresql_instance, env, site_name, host_name) (postgresql_replication_slot_lag_bytes{site_name=\"__SITE_NAME__\", slot_name=\"fivetran_pgoutput_slot\"})",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2147483648
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Slot '{{ $labels.slot_name }}' lag is {{ $values.A.Value }} bytes on host {{ $labels.host_name }}. Risk of WAL buildup.",
+        "summary": "Fivetran replication slot lag >500MB on {{ $labels.postgresql_instance }}"
+      },
+      "labels": {
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": true,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-cpuusage-85",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] Host CPU Usage (>85%)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(1 - avg by (host_name) (system_cpu_utilization_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", host_name=~\".*(PRDDB).*\", state=\"idle\"})) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    85
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "CPU usage {{ printf \"%.2f\" $values.A.Value }}% on host {{ $labels.host_name }}.",
+        "summary": "PGSQL host CPU usage exceeded threshold"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-diskusage-80",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] Host Disk Usage (>80%)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "label_replace(label_replace(system_filesystem_utilization_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", device!~\"rootfs\", host_name=~\".*(PRDDB).*\", mountpoint!~\"/hostfs/opt/containers/.*/overlay|.*etc.*|.*boot.*|/hostfs/var/lib/containers/storage/overlay.*\"}, \"mountpoint\", \"${1}\", \"mountpoint\", \"^/hostfs(/.*)?$\"), \"mountpoint\", \"/\", \"mountpoint\", \"^$\") * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    80
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Disk usage {{ printf \"%.2f\" $values.A.Value }}% on {{ $labels.mountpoint }} (host {{ $labels.host_name }}).",
+        "summary": "PGSQL host disk usage exceeded threshold"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-diskusage-70",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] Host Disk Usage (>70%)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "label_replace(label_replace(system_filesystem_utilization_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", device!~\"rootfs\", host_name=~\".*(PRDDB).*\", mountpoint!~\"/hostfs/opt/containers/.*/overlay|.*etc.*|.*boot.*|/hostfs/var/lib/containers/storage/overlay.*\"}, \"mountpoint\", \"${1}\", \"mountpoint\", \"^/hostfs(/.*)?$\"), \"mountpoint\", \"/\", \"mountpoint\", \"^$\") * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    70
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Disk usage {{ printf \"%.2f\" $values.A.Value }}% on {{ $labels.mountpoint }} (host {{ $labels.host_name }}).",
+        "summary": "PGSQL host disk usage exceeded threshold"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-cpuusage-75",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] Host CPU Usage (warning >75%)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(1 - avg by (host_name) (system_cpu_utilization_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", host_name=~\".*(PRDDB).*\", state=\"idle\"})) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    75
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "CPU usage {{ printf \"%.2f\" $values.A.Value }}% on host {{ $labels.host_name }}.",
+        "summary": "PGSQL host CPU usage exceeded threshold"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-pgsql-wal-rate",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] High WAL Generation Rate (>10MB/s)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by(postgresql_instance, env, site_name, host_name) (rate(postgresql_wal_lsn_bytes_total{site_name=\"__SITE_NAME__\"}[5m]))",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    10485760
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "WAL generation rate is {{ $values.A.Value }} bytes/s on host {{ $labels.host_name }} (threshold 10MB/s).",
+        "summary": "High WAL generation rate on {{ $labels.postgresql_instance }}"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-pgsql-replslot-status",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] Replication Slot WAL Status Not Reserved",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "max by(slot_name, postgresql_instance, env, site_name, host_name, wal_status) (postgresql_replication_slot_wal_status_code{site_name=\"__SITE_NAME__\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "Slot '{{ $labels.slot_name }}' wal_status is '{{ $labels.wal_status }}' (not reserved) on host {{ $labels.host_name }}. Replication consumer may be falling behind / WAL at risk.",
+        "summary": "Replication slot not reserved on {{ $labels.postgresql_instance }}"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfuxj39o5kydce",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BARMAN] Backup Failed - ZDC",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum(barman_backups_failed{server=\"zdc_cluster\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "queryType": "expression",
+          "relativeTimeRange": {
+            "from": 0,
+            "to": 0
+          },
+          "datasourceUid": "__expr__",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "A Barman backup failure has been detected for the ZDC backup server. Please check the Barman backup status and logs to identify the failed backup.",
+        "summary": "Barman backup failed for ZDC."
+      },
+      "labels": {
+        "backup_server": "zdc",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "service": "barman",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "notification_settings": {
+        "receiver": "Zodiac Database Admin"
+      },
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfuxj9p06jw8wc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][BARMAN] Backup Failed - MIS",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "builder",
+            "expr": "sum(barman_backups_failed{server=\"mis_cluster\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "queryType": "expression",
+          "relativeTimeRange": {
+            "from": 0,
+            "to": 0
+          },
+          "datasourceUid": "__expr__",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "1m",
+      "annotations": {
+        "description": "A Barman backup failure has been detected for the MIS backup server. Please check the Barman backup status and logs to identify the failed backup.",
+        "summary": "Barman backup failed for MIS."
+      },
+      "labels": {
+        "backup_server": "mis",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "service": "barman",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "notification_settings": {
+        "receiver": "Zodiac Database Admin"
+      },
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfv11jjd62eiod",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][PGSQL] Host Memory Usage (>90%)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "system_memory_utilization_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", host_name=~\".*(PRDDB).*\", state=\"used\"} * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    90
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Memory usage {{ printf \"%.2f\" $values.A.Value }}% on host {{ $labels.host_name }}.",
+        "summary": "PGSQL host memory usage exceeded threshold."
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "SBCP_IT": "true",
+        "alert_group": "pgsql",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "__SITE_NAME__-PGSQL-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__",
+        "team": "zodiac"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

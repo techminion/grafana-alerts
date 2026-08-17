@@ -1,0 +1,980 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "efpn453tq53pcb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][CONTAINER] Memory utilization > 75%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 900,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (container_name, host_name, site_name, env) (container_memory_percent_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    75
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "15m",
+      "annotations": {
+        "description": "Container: {{ $labels.container_name }}\nHost: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nContainer Memory Utilization:\n- Value: {{ $values.A.Value }}%\n- Threshold: > 75%\n- Duration: 15m\n\nStatus:\n- Breach: {{ if gt $values.A.Value 75.0 }}true{{ else }}false{{ end }}",
+        "summary": "Container memory utilization > 75% on {{ $labels.container_name }} ({{ $labels.host_name }}) ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "SBCP_IT": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "product": "zodiac",
+        "ruleGroup": "Host-Health-Alerts",
+        "scope": "container",
+        "severity": "info",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afmlxxgcq1ypse",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][HOST] Storage utilization > 80%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "system_filesystem_utilization_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"} * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    80
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Host: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\nMountpoint: {{ $labels.mountpoint }}\nDevice: {{ $labels.device }}\n\nStorage Utilization:\n- Value: {{ $values.A.Value }}%\n- Threshold: > 80%",
+        "summary": "Storage > 80% on {{ $labels.host_name }} mountpoint {{ $labels.mountpoint }} ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "Host-Health-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfmlxz27zvchsf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][HOST] Storage utilization > 90%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "system_filesystem_utilization_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"} * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    90
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Host: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\nMountpoint: {{ $labels.mountpoint }}\nDevice: {{ $labels.device }}\n\nStorage Utilization:\n- Value: {{ $values.A.Value }}%\n- Threshold: > 90%\n\nImpact: Disk near full. Risk of write failures, application crashes, or DB corruption. Free space or expand volume immediately.",
+        "summary": "CRITICAL storage > 90% on {{ $labels.host_name }} mountpoint {{ $labels.mountpoint }} ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "Host-Health-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afpn45os2z6yob",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][CONTAINER] Memory utilization > 80%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 900,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (container_name, host_name, site_name, env) (container_memory_percent_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    80
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "15m",
+      "annotations": {
+        "description": "Container: {{ $labels.container_name }}\nHost: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nContainer Memory Utilization:\n- Value: {{ $values.A.Value }}%\n- Threshold: > 80%\n- Duration: 15m\n\nStatus:\n- Breach: {{ if gt $values.A.Value 80.0 }}true{{ else }}false{{ end }}",
+        "summary": "Container memory utilization > 80% on {{ $labels.container_name }} ({{ $labels.host_name }}) ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "SBCP_IT": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "Host-Health-Alerts",
+        "scope": "container",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfpn46akw2pz4e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][CONTAINER] Memory utilization > 90%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "max by (container_name, host_name, site_name, env) (container_memory_percent_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    90
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Container: {{ $labels.container_name }}\nHost: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nContainer Memory Utilization:\n- Value: {{ $values.A.Value }}%\n- Threshold: > 90%\n- Duration: 5m\n\nImpact: Container near its memory limit. Risk of OOM-kill and container restart. Investigate top consumers / off-heap growth immediately.",
+        "summary": "CRITICAL container memory > 90% on {{ $labels.container_name }} ({{ $labels.host_name }}) ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "SBCP_IT": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "Host-Health-Alerts",
+        "scope": "container",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfmlxscb0dw5ca",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][HOST] CPU utilization > 70%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 900,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(1 - avg by (host_name, site_name, env) (system_cpu_utilization_ratio{state=\"idle\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[15m])) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    70
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "15m",
+      "annotations": {
+        "description": "Host: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nCPU Utilization:\n- Value: {{ $values.A.Value }}%\n- Threshold: > 70%\n- Duration: 15m\n\nStatus:\n- Breach: {{ if gt $values.A.Value 70.0 }}true{{ else }}false{{ end }}",
+        "summary": "High CPU utilization detected on {{ $labels.host_name }} (CPU={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "Host-Health-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfmlxtdos6io0e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][HOST] CPU utilization > 80%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 900,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(1 - avg by (host_name, site_name, env) (system_cpu_utilization_ratio{state=\"idle\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    80
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "15m",
+      "annotations": {
+        "description": "Host: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nCPU Utilization:\n- Value: {{ $values.A.Value }}%\n- Threshold: > 80%\n- Duration: 15m\n\nStatus:\n- Breach: {{ if gt $values.A.Value 80.0 }}true{{ else }}false{{ end }}",
+        "summary": "High CPU utilization detected on {{ $labels.host_name }} (CPU={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "Host-Health-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfmlxud6uq7swc",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][HOST] CPU utilization > 90%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 900,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(1 - avg by (host_name, site_name, env) (system_cpu_utilization_ratio{state=\"idle\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[15m])) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    90
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Host: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nCPU Utilization:\n- Value: {{ $values.A.Value }}%\n- Threshold: > 90%\n- Duration: 5m\n\nImpact: CPU is saturated. Application latency and throughput likely degraded. Investigate runaway processes, GC pressure, or undersized instance.",
+        "summary": "CRITICAL CPU saturation on {{ $labels.host_name }} (CPU={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "Host-Health-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffmlxv40zgef4f",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][HOST] Memory utilization > 80%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 900,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "avg by (host_name, site_name, env) (system_memory_utilization_ratio{state=\"used\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    80
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "15m",
+      "annotations": {
+        "description": "Host: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMemory Utilization (used):\n- Value: {{ $values.A.Value }}%\n- Threshold: > 80%\n- Duration: 15m\n\nStatus:\n- Breach: {{ if gt $values.A.Value 80.0 }}true{{ else }}false{{ end }}",
+        "summary": "High memory utilization detected on {{ $labels.host_name }} (Memory={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "product": "zodiac",
+        "ruleGroup": "Host-Health-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfmlxvqcnsbggb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][HOST] Memory utilization > 90%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "avg by (host_name, site_name, env) (system_memory_utilization_ratio{state=\"used\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}) * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    90
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Host: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nMemory Utilization (used):\n- Value: {{ $values.A.Value }}%\n- Threshold: > 90%\n- Duration: 5m\n\nImpact: Memory pressure imminent. Risk of swap thrashing, OOM kills, or application crashes. Investigate top consumers immediately.",
+        "summary": "CRITICAL memory utilization on {{ $labels.host_name }} (Memory={{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "product": "zodiac",
+        "ruleGroup": "Host-Health-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efmlxwltr864ge",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][HOST] Storage utilization > 70%",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "system_filesystem_utilization_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"} * 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    70
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Host: {{ $labels.host_name }}\nEnv: {{ $labels.env }}\nSite: {{ $labels.site_name }}\nMountpoint: {{ $labels.mountpoint }}\nDevice: {{ $labels.device }}\n\nStorage Utilization:\n- Value: {{ $values.A.Value }}%\n- Threshold: > 70%",
+        "summary": "Storage > 70% on {{ $labels.host_name }} mountpoint {{ $labels.mountpoint }} ({{ $values.A.Value }}%)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "product": "zodiac",
+        "ruleGroup": "Host-Health-Alerts",
+        "severity": "info",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

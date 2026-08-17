@@ -1,0 +1,573 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "afd3j2l6om1a8d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] Node-Fluent-Bit-Down",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "(\n  max by (host_name, service_name) (\n    max_over_time(\n      fluentbit_uptime_total{\n        service_name=~\"fluent-bit-agent|fluent-bit-server\",\n        site_name=\"__SITE_NAME__\",\n        env=\"__ENVIRONMENT__\"\n      }[1h]\n    )\n  )\n  unless\n  on(host_name, service_name)\n  present_over_time(\n    fluentbit_uptime_total{\n      service_name=~\"fluent-bit-agent|fluent-bit-server\",\n      site_name=\"__SITE_NAME__\",\n      env=\"__ENVIRONMENT__\"\n    }[2m]\n  )\n)\nOR on() vector(0)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "summary": "A Fluent Bit agent or server on a specific host has stopped reporting uptime metrics for several minutes. Log collection from that node is unavailable. NOTE: if many hosts fire at once, suspect an ingestion-path issue and check [__SITE_NAME__][__ENVIRONMENT__] Fluent-Bit-Ingestion-Degraded before treating as per-node failures."
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "Fluent-Bit-Alerts",
+        "scope": "node",
+        "service": "fluentbit",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfd3l47f7b7y8a",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] Fluent-Bit-OutputLogsDropped",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "disableTextWrap": false,
+            "editorMode": "code",
+            "expr": "(\nsum by(service_name, host_name) (\n  rate(fluentbit_output_dropped_records_total{\n    service_name=~\"fluent-bit-agent\",\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\"\n  }[5m])\n)\n) OR on() vector(0)",
+            "fullMetaSearch": false,
+            "hide": false,
+            "includeNullMetadata": true,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A",
+            "useBackend": false
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "10m",
+      "annotations": {
+        "description": "Fluent Bit has started dropping log records while attempting to deliver them to the output backend.\n\nImpact:\nConfirmed log data loss. Some application and system logs may not be delivered to the logging backend.",
+        "summary": "Fluent Bit is dropping log records at the output stage"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "Fluent-Bit-Alerts",
+        "service": "fluentbit",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffd3lay9hfy80e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] Fluent-Bit-OutputErrors (Clients)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "disableTextWrap": false,
+            "editorMode": "code",
+            "expr": "(\nsum by(service_name, host_name) (\n  increase(fluentbit_output_errors_total{\n    service_name=~\"fluent-bit-agent\",\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\"\n  }[5m])\n)\n) OR on() vector(0)",
+            "fullMetaSearch": false,
+            "hide": false,
+            "includeNullMetadata": true,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A",
+            "useBackend": false
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    20
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "10m",
+      "annotations": {
+        "description": "Fluent Bit is reporting errors while sending logs to the configured output destination (for example, Loki or another ingestion service).\n\nImpact:\nLog delivery is failing and may lead to data loss if the issue persists.",
+        "summary": "Fluent Bit is encountering errors while sending logs to the output destination"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "Fluent-Bit-Alerts",
+        "service": "fluentbit",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfd3mv09bcnb4f",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] Fluent-Bit-PipelineStuck",
+      "condition": "A",
+      "data": [
+        {
+          "refId": "INPUT_RATE",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "disableTextWrap": false,
+            "editorMode": "code",
+            "expr": "(\nsum by(service_name, host_name) (\n  rate(fluentbit_input_records_total{\n    service_name=~\"fluent-bit-agent|fluent-bit-server\",\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\"\n  }[10m])\n)\n) OR on() vector(0)",
+            "fullMetaSearch": false,
+            "includeNullMetadata": true,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "INPUT_RATE",
+            "useBackend": false
+          }
+        },
+        {
+          "refId": "OUTPUT_RATE",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "disableTextWrap": false,
+            "editorMode": "code",
+            "expr": "(\nsum by(service_name, host_name) (\n  rate(fluentbit_output_proc_records_total{\n    service_name=~\"fluent-bit-agent|fluent-bit-server\",\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\"\n  }[10m])\n)\n) OR on() vector(0)",
+            "fullMetaSearch": false,
+            "includeNullMetadata": true,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "OUTPUT_RATE",
+            "useBackend": false
+          }
+        },
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$INPUT_RATE > 10 && ($OUTPUT_RATE / $INPUT_RATE) < 0.1",
+            "hide": false,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "10m",
+      "annotations": {
+        "description": "Fluent Bit is receiving log records but is not successfully processing or forwarding them.\n\nImpact:\nThe logging pipeline appears stalled. Logs may be buffered internally and risk being dropped if the condition persists.",
+        "summary": "Fluent Bit pipeline is stalled with input activity but no output."
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "Fluent-Bit-Alerts",
+        "service": "fluentbit",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dfp3etcex54owd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] Fluent-Bit-OutputLogsDropped (Server)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "disableTextWrap": false,
+            "editorMode": "code",
+            "expr": "(\nsum by(service_name, host_name) (\n  rate(fluentbit_output_dropped_records_total{\n    service_name=~\"fluent-bit-server\",\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    name!=\"loki.0\"\n  }[5m])\n)\n) OR on() vector(0)",
+            "fullMetaSearch": false,
+            "hide": false,
+            "includeNullMetadata": true,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A",
+            "useBackend": false
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    5
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "10m",
+      "annotations": {
+        "description": "Fluent Bit has started dropping log records while attempting to deliver them to the output backend.\n\nImpact:\nConfirmed log data loss. Some application and system logs may not be delivered to the logging backend.",
+        "summary": "Fluent Bit is dropping log records at the output stage"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "Fluent-Bit-Alerts",
+        "service": "fluentbit",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfp7aff7hfn5sf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] Fluent-Bit-OutputErrors (Server)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "disableTextWrap": false,
+            "editorMode": "code",
+            "expr": "(\nsum by(service_name, host_name) (\n  increase(fluentbit_output_errors_total{\n    service_name=~\"fluent-bit-server\",\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    name!=\"loki.0\"\n  }[5m])\n)\n) OR on() vector(0)",
+            "fullMetaSearch": false,
+            "hide": false,
+            "includeNullMetadata": true,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A",
+            "useBackend": false
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    20
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "10m",
+      "annotations": {
+        "description": "Fluent Bit is reporting errors while sending logs to the configured output destination (for example, Loki or another ingestion service).\n\nImpact:\nLog delivery is failing and may lead to data loss if the issue persists.",
+        "summary": "Fluent Bit is encountering errors while sending logs to the output destination"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "Fluent-Bit-Alerts",
+        "service": "fluentbit",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

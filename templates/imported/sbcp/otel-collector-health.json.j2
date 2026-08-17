@@ -1,0 +1,1645 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "efpifv4a11vr4d",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Metric Missing - Redis (redis_commands_processed_total)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "absent_over_time(redis_commands_processed_total{site_name=\"__SITE_NAME__\"}[5m])",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "The named metric redis_commands_processed_total{site_name=__SITE_NAME__} has produced no samples for >5m, while the Redis receiver may still be reporting other series. This catches a single metric being silently dropped (relabel rule, schema change, or per-metric scrape failure) — a case the receiver-level 'stopped scraping' rule won't catch. Verify the Redis receiver config and recent collector/pipeline changes.",
+        "summary": "Metric redis_commands_processed_total has disappeared at __SITE_NAME__"
+      },
+      "labels": {
+        "category": "otel-metric-absent",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__",
+        "source": "redis"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bflucjc3n3xmoe",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Service-Graph Dropping Spans",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "sum by (host_name, site_name) (increase(otelcol_connector_servicegraph_dropped_spans_total{site_name=\"__SITE_NAME__\"}[5m]))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    3000
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "10m",
+      "annotations": {
+        "description": "The service-graph connector at site __SITE_NAME__ is dropping spans ({{ $values.B }} in 5m). Threshold: >3000 in 5m (~10/s sustained). Post-fix (store max_items=20000) the drop floor should be near zero; a breach means the edge store is overflowing again (volume growth or dimensions explosion). Service graph data will be incomplete.",
+        "summary": "OTEL service-graph dropping spans ({{ $values.B }}/5m)"
+      },
+      "labels": {
+        "category": "otel-servicegraph-dropped",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bflucdprapou8e",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Receiver Stopped Scraping Source",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(receiver, host_name, site_name) (rate(otelcol_scraper_scraped_metric_points_total{site_name=\"__SITE_NAME__\", receiver!=\"sqlquery/postgresql-mis-slowqueries\"}[10m])) == 0",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    -1
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Receiver {{ $labels.receiver }} on the OTEL collector at site __SITE_NAME__ has produced 0 metric points for >5m. The upstream source (a Redis, Sentinel, Postgres, Apache, or JMX target) may be unreachable, down, or auth-failing. Check the scraper logs.",
+        "summary": "OTEL receiver {{ $labels.receiver }} stopped scraping"
+      },
+      "labels": {
+        "category": "otel-receiver-no-data",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afluce740bi0wf",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Exporter Send Failures",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "sum by (exporter, host_name, site_name) (increase(otelcol_exporter_send_failed_metric_points_total{site_name=\"__SITE_NAME__\"}[5m])) > 0",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    -1
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Exporter {{ $labels.exporter }} on the OTEL collector at site __SITE_NAME__ is failing to send metric points to its backend. This can mean Prometheus remote write is rejecting samples, the OTLP backend is down, or there's a network issue between the collector and downstream. Telemetry may be dropped if the queue also fills.",
+        "summary": "OTEL exporter {{ $labels.exporter }} send failures ({{ $values.B }}/5m)"
+      },
+      "labels": {
+        "category": "otel-exporter-failures",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efluceov5c740f",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Exporter Queue Near Full (>80%)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "(otelcol_exporter_queue_size{site_name=\"__SITE_NAME__\"} / otelcol_exporter_queue_capacity{site_name=\"__SITE_NAME__\"}) > 0.8",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    -1
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Exporter {{ $labels.exporter }} queue on the OTEL collector at site __SITE_NAME__ is >80% full. The downstream backend is slower than incoming data — if this hits 100%, new telemetry will be dropped. Check the destination backend (Prometheus/OTLP) for slowness or rejections.",
+        "summary": "OTEL exporter {{ $labels.exporter }} queue at {{ $values.B }}%"
+      },
+      "labels": {
+        "category": "otel-exporter-queue",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "fflucf7halipsb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Load Balancer Backend Missing",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "otelcol_loadbalancer_num_backends{site_name=\"__SITE_NAME__\"} < 2",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    -1
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "2m",
+      "annotations": {
+        "description": "The OTEL load balancer exporter at site __SITE_NAME__ has fewer than 2 backends available. Expected backends are 172.21.18.18:4418 and 172.21.19.18:4418. One backend has stopped responding to DNS/health checks. Tail-sampling consistency and trace fan-out will be affected.",
+        "summary": "OTEL load balancer has only {{ $values.B }} backend(s) (expected 2)"
+      },
+      "labels": {
+        "category": "otel-loadbalancer-backend",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "fflucfr8i6qyod",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Collector High CPU (>80%)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "rate(otelcol_process_cpu_seconds_total{site_name=\"__SITE_NAME__\"}[5m]) > 0.8",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    -1
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "10m",
+      "annotations": {
+        "description": "The OTEL collector at site __SITE_NAME__ is consuming >80% of a CPU core for 10 minutes. This may slow scrapes, batching, and tail sampling. Common causes: a noisy receiver, regex-heavy log processors, or trace fan-out volume increase.",
+        "summary": "OTEL collector on {{ $labels.host_name }} CPU at {{ $values.B }} cores"
+      },
+      "labels": {
+        "category": "otel-collector-cpu",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfpifvnsphlhce",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Metric Missing - PostgreSQL (postgresql_backends)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "absent_over_time(postgresql_backends{site_name=\"__SITE_NAME__\"}[5m])",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "The named metric postgresql_backends{site_name=__SITE_NAME__} has produced no samples for >5m, while the Postgres receiver may still be reporting other series. This catches a single metric being silently dropped (relabel rule, schema change, or per-metric scrape failure) — a case the receiver-level 'stopped scraping' rule won't catch. Verify the postgresql receiver config and recent collector/pipeline changes.",
+        "summary": "Metric postgresql_backends has disappeared at __SITE_NAME__"
+      },
+      "labels": {
+        "category": "otel-metric-absent",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__",
+        "source": "postgresql"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "efpifw82lmhoge",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Metric Missing - ActiveMQ (activemq_memory_usage_percent)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "absent_over_time(activemq_memory_usage_percent{site_name=\"__SITE_NAME__\"}[5m])",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "The named metric activemq_memory_usage_percent{site_name=__SITE_NAME__} has produced no samples for >5m, while the JMX/ActiveMQ receiver may still be reporting other series. This catches a single metric being silently dropped (relabel rule, schema change, or per-metric scrape failure) — a case the receiver-level 'stopped scraping' rule won't catch. Verify the JMX receiver config and recent collector/pipeline changes.",
+        "summary": "Metric activemq_memory_usage_percent has disappeared at __SITE_NAME__"
+      },
+      "labels": {
+        "category": "otel-metric-absent",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__",
+        "source": "activemq"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cflucd4ll6cxsa",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Collector Down / Not Reporting",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "absent_over_time(otelcol_process_uptime_total{site_name=\"__SITE_NAME__\"}[5m])",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "2m",
+      "annotations": {
+        "description": "The OTEL collector at site __SITE_NAME__ stopped emitting otelcol_process_uptime_total for >5m. The collector process may be dead or the host unreachable. This is a telemetry pipeline outage — Redis, Postgres, Apache, JMX scrapes are all affected.",
+        "summary": "OTEL collector on {{ $labels.host_name }} stopped reporting"
+      },
+      "labels": {
+        "category": "otel-collector-down",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "critical",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bflucg84ugikgd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Collector Restarted",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 900,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "resets(otelcol_process_uptime_total{site_name=\"__SITE_NAME__\"}[10m]) > 0",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    -1
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "The OTEL collector at site __SITE_NAME__ restarted within the last 10 minutes (uptime counter reset). If this is unexpected or repeats, investigate — likely causes are OOM kill, config reload, or panic. Check journald/podman logs on {{ $labels.host_name }}.",
+        "summary": "OTEL collector on {{ $labels.host_name }} restarted"
+      },
+      "labels": {
+        "category": "otel-collector-restart",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cflucgta2ik1sa",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Receiver Refusing Data",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "sum by (receiver, host_name, site_name) (increase(otelcol_receiver_refused_metric_points_total{site_name=\"__SITE_NAME__\"}[5m])) > 0",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    -1
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Receiver {{ $labels.receiver }} on the OTEL collector at site __SITE_NAME__ is refusing incoming metric points. This typically means parse errors, queue full, or schema rejections. {{ $values.B }} refusals in 5m.",
+        "summary": "OTEL receiver {{ $labels.receiver }} refusing metrics ({{ $values.B }}/5m)"
+      },
+      "labels": {
+        "category": "otel-receiver-refused",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfluchgc69ssgd",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Scrape Errors (per receiver)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "sum by (receiver, host_name, site_name) (increase(otelcol_scraper_errored_metric_points_total{site_name=\"__SITE_NAME__\"}[5m])) > 0",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    -1
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Receiver {{ $labels.receiver }} on the OTEL collector at site __SITE_NAME__ has scrape errors ({{ $values.B }} errored points in 5m). The target may be intermittently unreachable, returning partial data, or hitting timeouts.",
+        "summary": "OTEL receiver {{ $labels.receiver }} scrape errors ({{ $values.B }}/5m)"
+      },
+      "labels": {
+        "category": "otel-scrape-errors",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afluchzlml0jka",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Tail Sampling Policy Errors",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "sum by (host_name, site_name, policy) (increase(otelcol_processor_tail_sampling_sampling_policy_evaluation_error_total{site_name=\"__SITE_NAME__\"}[5m])) > 0",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    -1
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "5m",
+      "annotations": {
+        "description": "Tail-sampling policy evaluation is throwing errors at site __SITE_NAME__ ({{ $values.B }} errors in 5m). A sampling policy is misconfigured or one of its inputs (attribute, span data) is unexpected. Spans may not be sampled correctly.",
+        "summary": "OTEL tail-sampling policy errors ({{ $values.B }}/5m)"
+      },
+      "labels": {
+        "category": "otel-tail-sampling-policy-error",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "dflucilgl3e9sb",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Traces Dropped Too Early",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "expr": "sum by (host_name, site_name) (increase(otelcol_processor_tail_sampling_sampling_trace_dropped_too_early_total{site_name=\"__SITE_NAME__\"}[5m]))",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    500
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "for": "15m",
+      "annotations": {
+        "description": "Tail-sampling at site __SITE_NAME__ is dropping traces before all their spans arrive ({{ $values.B }} in 5m, sustained 15m). Threshold: >500 in 5m. Post-fix (num_traces=200000) this should stay near zero; sustained breach means the trace buffer is genuinely exceeded during a real volume surge. Affected traces will be incomplete in Tempo.",
+        "summary": "OTEL tail sampler dropping traces early ({{ $values.B }}/5m)"
+      },
+      "labels": {
+        "category": "otel-tail-sampling-dropped",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfv6g7dzh03r4b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__]OTEL Exporter Queue Above Baseline (>200)",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "builder",
+            "expr": "max by(host_name, exporter) (max_over_time(otelcol_exporter_queue_size{site_name=\"__SITE_NAME__\", host_name=~\".*COM.*\", exporter=~\"prome.*\"}[5m]))",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    100
+                  ],
+                  "type": "gt"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Alerting",
+      "annotations": {
+        "description": "Exporter {{ $labels.exporter }} on the OTEL collector at site __SITE_NAME__ has a send queue above its normal baseline (max {{ $values.B }} items in the last 5m, threshold >200). Normal steady-state is ~0-2; a climb into the hundreds means the downstream backend (SEA vminsert for prometheusremotewrite/app, or a COM agent for loadbalancing/*) is draining slower than data arrives. These ramps are short (2-9 min) and collapse instantly on recovery, so this rule uses max_over_time + for:0m to catch the spike before it flushes, rather than requiring a sustained level. Fires far below the capacity-based 'Queue Near Full (>80%)' rule. If breaching, correlate with vminsert vm_concurrent_insert_limit_reached_total in the SEA monitoring namespace. Runbook: incident 2026-08-14 __SITE_NAME__ COM exporter queue spikes.",
+        "summary": "OTEL exporter {{ $labels.exporter }} queue above baseline on {{ $labels.host_name }} (peak {{ $values.B }} items in 5m)"
+      },
+      "labels": {
+        "category": "otel-exporter-queue",
+        "env": "__ENVIRONMENT__",
+        "product": "zodiac",
+        "ruleGroup": "otel-collector-health",
+        "severity": "warning",
+        "site": "__SITE_NAME__",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "for": "0s",
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

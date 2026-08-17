@@ -1,0 +1,549 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "afozoqysbhl34e",
+      "title": "__SITE_NAME__-Integration-ActiveMQ queue depth P3",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (host_name, site_name, env, destination) (\n  activemq_message_current_messages{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    destination=~\"dpws.edi.queue|dpws.serviceorder|dpws.terminalupdates|dpws.unitevent|dpws.vesselvisit|dpws.zbe.itos.events|dpws.compass.slow\"\n  }\n)",
+            "hide": false,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    500
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Site: {{ $labels.site_name }}\nEnv: {{ $labels.env }}\nQueue: {{ $labels.destination }}\n\nMetric:\n\nName: ActiveMQ Queue Depth (Current Messages)\nCondition: > 500 messages pending in __SITE_NAME__ Integration queue\n\nImpact:\nA growing backlog in __SITE_NAME__ Integration queues indicates that message consumption is slower than production. This leads to delayed processing, increased end-to-end latency, and potential SLA violations across dependent systems.\n\nStatus:\n\nQueue Backlog: Medium\nSeverity: WARNING (CRITICAL if continuously increasing)",
+        "summary": "High message backlog detected in __SITE_NAME__ Integration queue {{ $labels.destination }} (queue depth > 500)"
+      },
+      "labels": {
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Integration-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfozorlm62wowb",
+      "title": "__SITE_NAME__-Integration-ActiveMQ queue depth P2",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (host_name, site_name, env, destination) (\n  activemq_message_current_messages{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    destination=~\"dpws.edi.queue|dpws.serviceorder|dpws.terminalupdates|dpws.unitevent|dpws.vesselvisit|dpws.zbe.itos.events|dpws.compass.slow\"\n  }\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1300
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Site: {{ $labels.site_name }}\nEnv: {{ $labels.env }}\nQueue: {{ $labels.destination }}\n\nMetric:\n\nName: ActiveMQ Queue Depth (Current Messages)\nCondition: > 1300 messages pending in __SITE_NAME__ Integration queue\n\nImpact:\nA growing backlog in __SITE_NAME__ Integration queues indicates that message consumption is slower than production. This leads to delayed processing, increased end-to-end latency, and potential SLA violations across dependent systems.\n\nStatus:\n\nQueue Backlog: High\nSeverity: CRITICAL",
+        "summary": "High message backlog detected in __SITE_NAME__ Integration queue {{ $labels.destination }} (queue depth > 1300)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "SBCP_IT": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Integration-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "ffozos75jk8owc",
+      "title": "__SITE_NAME__-Integration-ActiveMQ queue depth P1",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by (host_name, site_name, env, destination) (\n  activemq_message_current_messages{\n    site_name=\"__SITE_NAME__\",\n    env=\"__ENVIRONMENT__\",\n    destination=~\"dpws.edi.queue|dpws.serviceorder|dpws.terminalupdates|dpws.unitevent|dpws.vesselvisit|dpws.zbe.itos.events|dpws.compass.slow\"\n  }\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2000
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Site: {{ $labels.site_name }}\nEnv: {{ $labels.env }}\nQueue: {{ $labels.destination }}\n\nMetric:\n\nName: ActiveMQ Queue Depth (Current Messages)\nCondition: > 2000 messages pending in __SITE_NAME__ Integration queue\n\nImpact:\nA growing backlog in __SITE_NAME__ Integration queues indicates that message consumption is slower than production. This leads to delayed processing, increased end-to-end latency, and potential SLA violations across dependent systems.\n\nStatus:\n\nQueue Backlog: Medium\nSeverity: WARNING (CRITICAL if continuously increasing)",
+        "summary": "High message backlog detected in __SITE_NAME__ Integration queue {{ $labels.destination }} (queue depth > 2000)"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "SBCP_IT": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-Integration-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "cfozosrf7egw0f",
+      "title": "__SITE_NAME__-Integration-ActiveMQ Internal queue delay high",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(destination, host_name) (activemq_message_wait_time_avg_milliseconds{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"dpws.edi.queue|dpws.serviceorder|dpws.terminalupdates|dpws.unitevent|dpws.vesselvisit|dpws.zbe.itos.events|dpws.compass.slow\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    150
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "For {{ $labels.destination }} on {{ $labels.host_name }}, average message wait time is {{ $value }} ms in __SITE_NAME__.\n\nThis indicates increased delay in message consumption from ActiveMQ queues.\n\nPossible causes:\n- Slow or stuck consumers\n- High message backlog\n- Downstream processing latency\n\nImpact:\nMessages may be delayed, leading to slower processing and potential backlog buildup in flows.",
+        "summary": "AMQ Queue Delay High - {{ $labels.destination }}"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-Integration-Alerts",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "bfozotkkuqfpcd",
+      "title": "__SITE_NAME__-Integration-AMQ Degraded Consumer",
+      "condition": "E",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "expr": "sum by(destination, host_name) (rate(activemq_message_enqueued_messages_total{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"dpws.edi.queue|dpws.serviceorder|dpws.terminalupdates|dpws.unitevent|dpws.vesselvisit|dpws.zbe.itos.events|dpws.compass.slow\"}[5m])) - (sum by(destination, host_name) (rate(activemq_message_dequeued_messages_total{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"dpws.edi.queue|dpws.serviceorder|dpws.terminalupdates|dpws.unitevent|dpws.vesselvisit|dpws.zbe.itos.events|dpws.compass.slow\"}[5m])))",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(destination, host_name) (activemq_consumer_count_consumers{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\"dpws.edi.queue|dpws.serviceorder|dpws.terminalupdates|dpws.unitevent|dpws.vesselvisit|dpws.zbe.itos.events|dpws.compass.slow\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "B"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "D",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "D",
+            "type": "threshold"
+          }
+        },
+        {
+          "refId": "E",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0,
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": []
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "name": "Expression",
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "$C && $D",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "E",
+            "type": "math"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "Error",
+      "for": "5m",
+      "annotations": {
+        "description": "Queue {{ $labels.destination }} has active consumers but dequeue rate is lagging behind enqueue rate. Consumers may be stalled or processing too slowly.",
+        "summary": "AMQ Zombie Consumer: {{ $labels.destination }}"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "SBCP_IT": "true",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-Integration-Alerts",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}

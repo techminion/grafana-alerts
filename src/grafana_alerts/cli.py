@@ -62,6 +62,13 @@ def _credentials() -> tuple[str, str]:
     return url, token
 
 
+def _assert_remote_ready(folder_uid: object) -> None:
+    if str(folder_uid).startswith("REPLACE_WITH_"):
+        raise AlertManagerError(
+            "Replace the placeholder grafana.folder_uid in the site config before remote access"
+        )
+
+
 @app.command()
 def whoami() -> None:
     """Show the identity represented by the configured Grafana token."""
@@ -82,6 +89,7 @@ def plan(
     """Compare desired groups with Grafana without changing Grafana."""
     try:
         site, groups = _render(site_file, template_dir)
+        _assert_remote_ready(site.grafana["folder_uid"])
         url, token = _credentials()
         client = GrafanaClient(url, token)
         client.whoami()
@@ -104,6 +112,7 @@ def deploy(
     """Create or replace configured rule groups in Grafana."""
     try:
         site, groups = _render(site_file, template_dir)
+        _assert_remote_ready(site.grafana["folder_uid"])
         url, token = _credentials()
         client = GrafanaClient(url, token)
         identity = client.whoami()
@@ -117,4 +126,3 @@ def deploy(
     except AlertManagerError as exc:
         console.print(f"[red]Deploy failed:[/red] {exc}")
         raise typer.Exit(1) from exc
-

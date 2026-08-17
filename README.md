@@ -52,6 +52,63 @@ Grafana organization and have permission to read the identity endpoint and provi
 The CLI always verifies the token with `/api/user`; it does not trust a username supplied through a
 file or environment variable.
 
+### SBCP import
+
+`sites/sbcp.yaml` represents the supplied SBCP provisioning export:
+
+- organization ID: `10`
+- folder: `SBCP`
+- 28 rule groups
+- 676 alert rules
+- evaluation interval: 60 seconds
+- Prometheus UID: `afq2sc9yp1u68f`
+- Loki UID: `ffq2s7k65isxse`
+
+The export contains the folder name but not its UID. The SBCP folder UID is configured as
+`cfq41jl2svbi8a` in `sites/sbcp.yaml`.
+
+The generated templates live under `templates/imported/sbcp/`. They preserve the rule UIDs,
+queries, thresholds, pending durations, labels, annotations, error/no-data behavior, and paused
+state. Only the site, environment, organization ID, folder UID, and data source UIDs are
+parameterized.
+
+To regenerate them from a newer Grafana export:
+
+```bash
+python scripts/import_grafana_export.py sbcp-alerts.json \
+  --site-name SBCP \
+  --environment PROD \
+  --folder-uid cfq41jl2svbi8a \
+  --datasource prometheus=afq2sc9yp1u68f \
+  --datasource loki=ffq2s7k65isxse \
+  --output templates/imported/sbcp \
+  --site-config sites/sbcp.yaml
+```
+
+### Per-site rule overrides
+
+Templates retain the imported SBCP values as defaults. Override only the rules that differ in a
+site configuration:
+
+```yaml
+groups:
+  - name: Fluent-Bit-Alerts
+    template: imported/sbcp/fluent-bit-alerts.json.j2
+    thresholds:
+      afd3j2l6om1a8d: [1]
+    for_overrides:
+      afd3j2l6om1a8d: 10m
+    query_overrides:
+      afd3j2l6om1a8d:
+        A: up{site_name="ANOTHER_SITE"}
+    rule_overrides:
+      afd3j2l6om1a8d:
+        labels:
+          og_priority: P1
+```
+
+`rule_overrides` is a recursive mapping merge; lists are replaced as a whole.
+
 ## Local usage
 
 ```bash
@@ -119,4 +176,3 @@ App Platform adapter will not change templates or site files.
    Grafana identity and its existing permissions.
 3. Add a true semantic diff to `plan` and require an approval before production deployment.
 4. Add opt-in pruning with an explicit allowlist; keep deletion disabled by default.
-

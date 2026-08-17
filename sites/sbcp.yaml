@@ -1,0 +1,67 @@
+site: SBCP
+grafana:
+  org_id: 10
+  folder_uid: cfq41jl2svbi8a
+  datasources:
+    prometheus: afq2sc9yp1u68f
+    loki: ffq2s7k65isxse
+defaults:
+  environment: PROD
+labels: {}
+groups:
+- name: Fluent-Bit-Alerts
+  template: imported/sbcp/fluent-bit-alerts.json.j2
+- name: Host-Health-Alerts
+  template: imported/sbcp/host-health-alerts.json.j2
+- name: SBCP-AMQ-Alerts
+  template: imported/sbcp/sbcp-amq-alerts.json.j2
+- name: SBCP-BOL-Alerts
+  template: imported/sbcp/sbcp-bol-alerts.json.j2
+- name: SBCP-BOL-Alerts-Logs
+  template: imported/sbcp/sbcp-bol-alerts-logs.json.j2
+- name: SBCP-CMS-API-Alerts
+  template: imported/sbcp/sbcp-cms-api-alerts.json.j2
+- name: SBCP-CMS-Alerts
+  template: imported/sbcp/sbcp-cms-alerts.json.j2
+- name: SBCP-Candi-Alerts
+  template: imported/sbcp/sbcp-candi-alerts.json.j2
+- name: SBCP-Combine-Alerts
+  template: imported/sbcp/sbcp-combine-alerts.json.j2
+- name: SBCP-DBS-Alerts
+  template: imported/sbcp/sbcp-dbs-alerts.json.j2
+- name: SBCP-DIX-Alerts
+  template: imported/sbcp/sbcp-dix-alerts.json.j2
+- name: SBCP-DME-Alerts
+  template: imported/sbcp/sbcp-dme-alerts.json.j2
+- name: SBCP-EDI-Alerts
+  template: imported/sbcp/sbcp-edi-alerts.json.j2
+- name: SBCP-Gate-Alerts
+  template: imported/sbcp/sbcp-gate-alerts.json.j2
+- name: SBCP-Integration-Alerts
+  template: imported/sbcp/sbcp-integration-alerts.json.j2
+- name: SBCP-Microservice-UI
+  template: imported/sbcp/sbcp-microservice-ui.json.j2
+- name: SBCP-NICE-Alerts
+  template: imported/sbcp/sbcp-nice-alerts.json.j2
+- name: SBCP-OPS-Alerts
+  template: imported/sbcp/sbcp-ops-alerts.json.j2
+- name: SBCP-PGSQL-Alerts
+  template: imported/sbcp/sbcp-pgsql-alerts.json.j2
+- name: SBCP-Print-Alerts
+  template: imported/sbcp/sbcp-print-alerts.json.j2
+- name: SBCP-Redis-Alerts
+  template: imported/sbcp/sbcp-redis-alerts.json.j2
+- name: SBCP-SCRIPTHOST-ALERTS
+  template: imported/sbcp/sbcp-scripthost-alerts.json.j2
+- name: SBCP-SSR-Alerts
+  template: imported/sbcp/sbcp-ssr-alerts.json.j2
+- name: SBCP-Timer-Alerts
+  template: imported/sbcp/sbcp-timer-alerts.json.j2
+- name: SBCP-Unit-Alerts
+  template: imported/sbcp/sbcp-unit-alerts.json.j2
+- name: SBCP-Vessel & Rail
+  template: imported/sbcp/sbcp-vessel-rail.json.j2
+- name: SBCP-api-gateway-alert
+  template: imported/sbcp/sbcp-api-gateway-alert.json.j2
+- name: otel-collector-health
+  template: imported/sbcp/otel-collector-health.json.j2

@@ -1,0 +1,3758 @@
+{
+  "title": [[ group.name | tojson ]],
+  "folderUid": [[ grafana.folder_uid | tojson ]],
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "sbcp-apigateway-jvmheap95",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_JVMHeap > 95",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, env, site_name,host_name) (jvm_memory_used_bytes{jvm_memory_type=\"heap\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\"})\n  /\n  sum by (job, env, site_name,host_name) (jvm_memory_limit_bytes{jvm_memory_type=\"heap\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\"})\n) * 100 > 95\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "JVM heap memory usage is {{ printf \"%.1f\" $value }}% on {{ $labels.host_name }} {{ $labels.job }} in __SITE_NAME__. Approaching memory limit, GC pressure may increase.",
+        "summary": "JVM Heap Memory Usage High - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "memory",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-amqdegradeconsumer",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_AMQDegradedConsumer",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by(destination, host_name) (rate(activemq_message_enqueued_messages_total{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\".*api-gateway.refresh.*\"}[5m]))\n  -\n  sum by(destination, host_name) (rate(activemq_message_dequeued_messages_total{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\".*api-gateway.refresh.*\"}[5m]))\n) > 0\nand\nsum by(destination, host_name) (activemq_consumer_count_consumers{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\".*api-gateway.refresh.*\"}) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Queue {{ $labels.destination }} has active consumers but dequeue rate is lagging behind enqueue rate. Consumers may be stalled or processing too slowly.",
+        "summary": "AMQ Zombie Consumer - API Gateway Refresh Queue (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-amqnoconsumers",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_AMQNoConsumers",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(destination, host_name) (activemq_consumer_count_consumers{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\".*api-gateway.refresh.*\"})",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1
+                  ],
+                  "type": "lt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Queue {{ $labels.destination }} has no active consumers on __SITE_NAME__. Messages will accumulate until consumers reconnect.",
+        "summary": "AMQ No Consumers - API Gateway Refresh Queue (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "jvm_down",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-p95registryget",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_P95_RegistryGet",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/registry/service/{key}\"}[2m]))) > 0.5",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /registry/service/{key} is {{ printf \"%.3f\" $value }}s on __SITE_NAME__, exceeding 500ms threshold.",
+        "summary": "Critical P95 Latency - Registry Get API (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-jvmcpusaturated",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_JVMCPUSaturated",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(host_name, job) (jvm_cpu_recent_utilization_ratio{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\"} * 100) > 70",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "JVM CPU utilization is {{ printf \"%.1f\" $value }}% on {{ $labels.host_name }} {{ $labels.job }} in __SITE_NAME__, exceeding 70% threshold. Application likely throttled, requests timing out.",
+        "summary": "JVM CPU Saturation Critical - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "cpu",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-amqqueuedepthhigh",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_AMQQueueDepthHigh",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(destination, host_name) (activemq_message_current_messages{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\".*api-gateway.refresh.*\"}) > 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Queue {{ $labels.host_name }} {{ $labels.destination }} has {{ $value }} pending messages in __SITE_NAME__. Consumers may be slow, stalled, or disconnected.",
+        "summary": "AMQ Queue Depth High - API Gateway Refresh (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "service": "activemq",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-amqqueuedelayhigh",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_AMQQueueDelayHigh",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(destination, host_name) (activemq_message_wait_time_avg_milliseconds{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", destination=~\".*api-gateway.refresh.*\"}) > 150",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Average message wait time is {{ printf \"%.0f\" $value }}ms on {{ $labels.host_name }} {{ $labels.destination }} in __SITE_NAME__, exceeding 150ms threshold. Consumers may be slow or overloaded.",
+        "summary": "AMQ Queue Delay High - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "service": "activemq",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-jvmlonggcpause",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_JVMLongGCPause",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.99, sum by(le, host_name, job) (rate(jvm_gc_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\", jvm_gc_name=\"G1 Young Generation\"}[5m]))) > 0.3",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P99 Young Gen GC pause is {{ printf \"%.3f\" $value }}s on {{ $labels.host_name }} {{ $labels.job }} in __SITE_NAME__, exceeding 300ms.",
+        "summary": "JVM Long GC Pause - Critical - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-jvmthreadleak",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_JVMThreadLeak",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by (job, host_name) (jvm_thread_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\"})\n  -\n  sum by (job, host_name) (jvm_thread_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\"} offset 1h)\n) > 50\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Thread count on {{ $labels.job }}/{{ $labels.host_name }} grew by {{ $value }} threads in the last 1 hour in __SITE_NAME__. Sustained growth pattern indicates a thread leak.",
+        "summary": "JVM Thread Leak Detected - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-overallp95latency",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_OverallP95Latency",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le, http_route) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/registry/.*\"}[5m]))) > 2",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for {{ $labels.http_route }} is {{ printf \"%.3f\" $value }}s on __SITE_NAME__, exceeding 2s threshold.",
+        "summary": "Critical P95 Latency - Registry APIs (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-p95registrycreate",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_P95_RegistryCreate",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/registry/create\"}[2m]))) > 0.5",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /registry/create is {{ printf \"%.3f\" $value }}s on __SITE_NAME__, exceeding 500ms threshold.",
+        "summary": "Critical P95 Latency - Registry Create API (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-redisp95latency",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_RedisP95Latency",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le, job, host_name) (redis_response_time_milliseconds_bucket{job=~\"zara-api-gateway|zara-api-gateway-admin\", env=\"__ENVIRONMENT__\", site_name=\"__SITE_NAME__\"})) > 100",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Redis P95 response time is {{ printf \"%.1f\" $value }}ms on API Gateway in __SITE_NAME__, exceeding 100ms threshold. Possible Redis slowness, network latency, or memory pressure.",
+        "summary": "High Redis P95 Latency - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "db",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-p95registryupdate",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_P95_RegistryUpdate",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/registry/{key}/update\"}[2m]))) > 0.5",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /registry/{key}/update is {{ printf \"%.3f\" $value }}s on __SITE_NAME__, exceeding 500ms threshold.",
+        "summary": "Critical P95 Latency - Registry Update API (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sou-apigateway-registrystatusupdate",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_P95_RegistryStatusUpdate",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/registry/status/{status}/update\"}[2m]))) > 0.5",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /registry/status/{status}/update is {{ printf \"%.3f\" $value }}s on __SITE_NAME__, exceeding 500ms threshold.",
+        "summary": "Critical P95 Latency - Registry Status Update API (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "afovyvxtd2ps0b",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__][APIGateway] Container-down",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "relativeTimeRange": {
+            "from": 10800,
+            "to": 0
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "max by (service, node, ip, port, site_name, env) (\r\n  bos_service_up{\r\n    site_name=\"__SITE_NAME__\",\r\n    env=\"__ENVIRONMENT__\",\r\n    service=~\"zara-api-gateway|zara-api-gateway-admin\",\r\n    node=\"APP-01-A\"\r\n  }\r\n)",
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "C",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "Alerting",
+      "execErrState": "Error",
+      "for": "2m",
+      "annotations": {
+        "description": "No container CPU usage metrics have been received for {{ $labels.service }} in the last 1 minute.\n\nEnvironment: {{ $labels.env }}\nSite: {{ $labels.site_name }}\n\nThis may indicate:\n- Pod/container crash or restart\n- Metrics exporter failure\n- Prometheus scrape failure\n- Container termination\n- Network/connectivity issue\n\nRecommended investigation:\n- Verify pod status and restarts\n- Check Prometheus target health\n- Inspect exporter/container logs\n- Validate node health\n- Review recent deployments or scaling activities",
+        "summary": "APIGateway/APIGateway-admin Container CPU Metrics Missing - {{ $labels.service }}"
+      },
+      "labels": {
+        "ALERT_ON_SITE": "true",
+        "ALERT_TO_BU": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P1",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site": "SOU",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-p95registrydelete",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_P95_RegistryDelete",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/registry/delete\"}[2m]))) > 0.5",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /registry/delete is {{ printf \"%.3f\" $value }}s on __SITE_NAME__, exceeding 500ms threshold.",
+        "summary": "Critical P95 Latency - Registry Delete API (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-jvmheap85",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_JVMHeap85",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by(host_name, job) (jvm_memory_used_bytes{jvm_memory_type=\"heap\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\"})\n  /\n  sum by(host_name, job) (jvm_memory_limit_bytes{jvm_memory_type=\"heap\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\"})\n) * 100 > 85\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "JVM heap memory usage is {{ printf \"%.1f\" $value }}% on {{ $labels.host_name }} {{ $labels.job }} in __SITE_NAME__. Approaching memory limit, GC pressure may increase.",
+        "summary": "Warning - JVM Heap Memory Usage High - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "memory",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-p95assignserviceapi",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_P95_AssignServiceAPI",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/registry/assign-service-api\"}[2m]))) > 0.5",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /registry/assign-service-api is {{ printf \"%.3f\" $value }}s on __SITE_NAME__, exceeding 500ms threshold.",
+        "summary": "Critical P95 Latency - Assign Service API (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-p95removeserviceapi",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_P95_RemoveServiceAPI",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=\"/registry/remove-service-api\"}[2m]))) > 0.5",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "P95 latency for /registry/remove-service-api is {{ printf \"%.3f\" $value }}s on __SITE_NAME__, exceeding 500ms threshold.",
+        "summary": "Critical P95 Latency - Remove Service API (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_latency",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-fastburn5xx",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_FastBurn5xx",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  (\n    sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/registry/.*\", http_response_status_code=~\"5..\"}[5m]))\n    /\n    sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/registry/.*\"}[5m]))\n  ) * 100 > 10\n)\nand\n(\n  (\n    sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/registry/.*\", http_response_status_code=~\"5..\"}[1h]))\n    /\n    sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/registry/.*\"}[1h]))\n  ) * 100 > 2\n)\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Error rate exceeding 10% over 5m and 2% over 1h on /registry/.* in __SITE_NAME__. Current short-window rate: {{ printf \"%.1f\" $value }}%. Immediate investigation required.",
+        "summary": "Fast Burn 5xx - Registry APIs (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-slowburn5xx",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_SlowBurn5xx",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  (\n    sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/registry/.*\", http_response_status_code=~\"5..\"}[1h]))\n    /\n    sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/registry/.*\"}[1h]))\n  ) * 100 > 20\n)\nand\n(\n  (\n    sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/registry/.*\", http_response_status_code=~\"5..\"}[6h]))\n    /\n    sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/registry/.*\"}[6h]))\n  ) * 100 > 5\n)\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Error rate exceeding 20% over 1h and 5% over 6h on /registry/.* in __SITE_NAME__. Current 1h rate: {{ printf \"%.1f\" $value }}%.",
+        "summary": "Slow Burn 5xx - Registry APIs (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-4xxspike",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_4xxSpike",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(http_route) (rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\", http_response_status_code=~\"4..\"}[5m])) > 10",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ printf \"%.1f\" $value }} req/sec returning 4xx on API Gateway in __SITE_NAME__. Possible bad requests, auth failures, or missing resources.",
+        "summary": "API 4xx Spike - {{ $labels.http_route }} - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-authfailurespike",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_AuthFailureSpike",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\", http_response_status_code=~\"401|403\"}[5m]))\n  /\n  sum(rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\"}[5m]))\n) * 100 > 10\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ printf \"%.1f\" $value }}% of requests returning 401/403 on API Gateway in __SITE_NAME__. Possible token expiry, auth service issue, or misconfigured permissions.",
+        "summary": "API Auth Failure Spike - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "api_errors",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-apigonesilent",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_APIGoneSilent",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  sum by(http_route) (rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/registry/.*\", job=~\"zara-api-gateway|zara-api-gateway-admin\"}[6h])) == 0\n)\nand\n(\n  sum by(http_route) (rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", http_route=~\"/registry/.*\", job=~\"zara-api-gateway|zara-api-gateway-admin\"}[12h])) > 0\n)\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "No requests received on {{ $labels.http_route }} in __SITE_NAME__ for 6h despite having traffic in the last 12h. Possible upstream failure, network issue, or service outage.",
+        "summary": "API Gone Silent - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-requestratedrop",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_RequestRateDrop",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  avg_over_time(\n    sum by(http_route) (\n      rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\", http_route=~\"/registry/.*\"}[5m])\n    )[1h:5m]\n  ) * 0.5\n)\n-\n(\n  sum by(http_route) (rate(http_server_request_duration_seconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\", http_route=~\"/registry/.*\"}[5m]))\n) > 2\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Current request rate on {{ $labels.http_route }} has dropped below 50% of the 1 hour rolling average in __SITE_NAME__. Possible upstream failure, network issue, or service degradation.",
+        "summary": "API Request Rate Drop - {{ $labels.http_route }} - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P3",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "warning",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-threadstarvation",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_ThreadStarvation",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "(\n  (\n    sum by(host_name, job)(jvm_thread_count{job=~\"zara-api-gateway|zara-api-gateway-admin\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", jvm_thread_state=\"blocked\"})\n    /\n    sum by(host_name, job)(jvm_thread_count{job=~\"zara-api-gateway|zara-api-gateway-admin\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})\n  ) * 100 > 10\n)\nand\n(\n  (\n    sum by(host_name, job)(jvm_thread_count{job=~\"zara-api-gateway|zara-api-gateway-admin\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", jvm_thread_state=\"runnable\"})\n    /\n    sum by(host_name, job)(jvm_thread_count{job=~\"zara-api-gateway|zara-api-gateway-admin\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"})\n  ) * 100 > 60\n)\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Over 60% threads runnable and over 10% threads blocked on {{ $labels.job }} in __SITE_NAME__. Risk of request timeouts and degraded throughput.",
+        "summary": "Thread starvation detected: {{ $labels.job }}"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-dbpoolexhausted",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_DBPoolExhausted",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by (job, env, site_name, host_name) (\n  db_client_connections_pending_requests{job=~\"zara-api-gateway|zara-api-gateway-admin\", env=\"__ENVIRONMENT__\", site_name=\"__SITE_NAME__\"}\n) > 0\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "{{ $value }} threads waiting for DB connection on {{ $labels.host_name }} - {{ $labels.job }} in __SITE_NAME__. Pool exhaustion imminent; requests will start timing out.",
+        "summary": "DB Pool Near Exhaustion - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "db",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-dbpoollongwait",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_DBPoolLongWait",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(host_name, job) (rate(db_client_connections_wait_time_milliseconds_sum{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\"}[5m]))\n/\nsum by(host_name, job) (rate(db_client_connections_wait_time_milliseconds_count{site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\", job=~\"zara-api-gateway|zara-api-gateway-admin\"}[5m]))\n> 500\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "5m",
+      "annotations": {
+        "description": "Average DB connection wait time on {{ $labels.host_name }} {{ $labels.job }} is {{ printf \"%.1f\" $value }}ms in __SITE_NAME__, exceeding 500ms. Connection pool may be undersized or DB is slow.",
+        "summary": "DB Pool Long Wait Time - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "alert_type": "db",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    },
+    {
+      "uid": "sbcp-apigateway-grequentrestarts",
+      "title": "[__SITE_NAME__][__ENVIRONMENT__] APIGateway_FrequentRestarts",
+      "condition": "threshold",
+      "data": [
+        {
+          "refId": "query",
+          "relativeTimeRange": {
+            "from": 660,
+            "to": 60
+          },
+          "datasourceUid": [[ grafana.datasources.prometheus | tojson ]],
+          "model": {
+            "datasource": {
+              "type": "prometheus",
+              "uid": [[ grafana.datasources.prometheus | tojson ]]
+            },
+            "editorMode": "code",
+            "expr": "sum by(host_name, job) (\n  increase(application_restarts_count{job=~\"zara-api-gateway|zara-api-gateway-admin\", site_name=\"__SITE_NAME__\", env=\"__ENVIRONMENT__\"}[10m])\n) > 2\n",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "query"
+          }
+        },
+        {
+          "refId": "prometheus_math",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "is_number($query) || is_nan($query) || is_inf($query)",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "prometheus_math",
+            "type": "math"
+          }
+        },
+        {
+          "refId": "threshold",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "-100",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                }
+              }
+            ],
+            "datasource": {
+              "IsPrunable": false,
+              "access": "",
+              "apiVersion": "",
+              "basicAuth": false,
+              "basicAuthUser": "",
+              "created": "0001-01-01T00:00:00Z",
+              "database": "",
+              "id": -100,
+              "isDefault": false,
+              "jsonData": {},
+              "name": "__expr__",
+              "readOnly": false,
+              "secureJsonData": {},
+              "type": "__expr__",
+              "uid": "__expr__",
+              "updated": "0001-01-01T00:00:00Z",
+              "url": "",
+              "user": "",
+              "withCredentials": false
+            },
+            "expression": "prometheus_math",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "threshold",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "OK",
+      "execErrState": "OK",
+      "for": "1m",
+      "annotations": {
+        "description": "API Gateway has restarted {{ $value }} times in the last 10 minutes on __SITE_NAME__. Possible crash loop, OOM kill, or deployment issue.",
+        "summary": "Frequent restarts detected - API Gateway (__SITE_NAME__)"
+      },
+      "labels": {
+        "__converted_prometheus_rule__": "true",
+        "bu": "zodiac",
+        "env": "__ENVIRONMENT__",
+        "og_priority": "P2",
+        "ruleGroup": "__SITE_NAME__-api-gateway-alert",
+        "severity": "critical",
+        "site_name": "__SITE_NAME__"
+      },
+      "isPaused": false,
+      "ruleGroup": [[ group.name | tojson ]],
+      "folderUID": [[ grafana.folder_uid | tojson ]],
+      "orgId": [[ grafana.org_id ]]
+    }
+  ]
+}
