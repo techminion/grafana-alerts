@@ -157,6 +157,7 @@ def render_site(site: SiteConfig, template_dir: str | Path) -> tuple[RenderedGro
 
 
 def write_rendered(groups: tuple[RenderedGroup, ...], output_dir: str | Path) -> list[Path]:
+    """Compatibility helper for callers that do not need a signed manifest."""
     directory = Path(output_dir)
     directory.mkdir(parents=True, exist_ok=True)
     paths: list[Path] = []

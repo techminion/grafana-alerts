@@ -9,10 +9,12 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from grafana_alerts.artifacts import load_bundle, write_bundle
 from grafana_alerts.config import load_site
 from grafana_alerts.exceptions import AlertManagerError
 from grafana_alerts.grafana import GrafanaClient
-from grafana_alerts.renderer import render_site, write_rendered
+from grafana_alerts.renderer import render_site
+from grafana_alerts.semantic import compare_group, write_plan
 
 app = typer.Typer(no_args_is_help=True, help="Render, validate, and deploy Grafana alerts.")
 console = Console()
@@ -46,12 +48,13 @@ def render(
     """Render a site into deterministic Grafana API JSON payloads."""
     try:
         site, groups = _render(site_file, template_dir)
-        paths = write_rendered(groups, output_dir / site.name)
+        bundle = write_bundle(site, groups, output_dir)
     except AlertManagerError as exc:
         console.print(f"[red]Render failed:[/red] {exc}")
         raise typer.Exit(1) from exc
-    for path in paths:
-        console.print(f"[green]Rendered[/green] {path}")
+    for group in bundle.groups:
+        console.print(f"[green]Rendered[/green] {bundle.directory / group.filename}")
+    console.print(f"[green]Manifest[/green] {bundle.directory / 'manifest.json'}")
 
 
 def _credentials() -> tuple[str, str]:
@@ -84,35 +87,48 @@ def whoami() -> None:
 @app.command()
 def plan(
     site_file: Annotated[Path, typer.Argument(exists=True, readable=True)],
-    template_dir: Annotated[Path, typer.Option("--templates", "-t")] = Path("templates"),
+    artifact_dir: Annotated[
+        Path,
+        typer.Option("--artifact-dir", exists=True, file_okay=False, readable=True),
+    ] = ...,
+    output_dir: Annotated[Path, typer.Option("--output", "-o")] = Path("plan"),
 ) -> None:
-    """Compare desired groups with Grafana without changing Grafana."""
+    """Compare a rendered artifact with Grafana without changing Grafana."""
     try:
-        site, groups = _render(site_file, template_dir)
+        site = load_site(site_file)
         _assert_remote_ready(site.grafana["folder_uid"])
+        bundle = load_bundle(site, artifact_dir)
         url, token = _credentials()
         client = GrafanaClient(url, token)
         client.whoami()
         table = Table("Group", "Action")
-        for group in groups:
+        comparisons = []
+        for group in bundle.groups:
             current = client.get_group(site.grafana["folder_uid"], group.name)
-            action = "create" if current is None else "update"
-            table.add_row(group.name, action)
+            comparison = compare_group(group.name, group.payload, current)
+            comparisons.append(comparison)
+            table.add_row(group.name, comparison.action)
+        plan_path = write_plan(comparisons, output_dir)
     except AlertManagerError as exc:
         console.print(f"[red]Plan failed:[/red] {exc}")
         raise typer.Exit(1) from exc
     console.print(table)
+    console.print(f"[green]Plan[/green] {plan_path}")
 
 
 @app.command()
 def deploy(
     site_file: Annotated[Path, typer.Argument(exists=True, readable=True)],
-    template_dir: Annotated[Path, typer.Option("--templates", "-t")] = Path("templates"),
+    artifact_dir: Annotated[
+        Path,
+        typer.Option("--artifact-dir", exists=True, file_okay=False, readable=True),
+    ] = ...,
 ) -> None:
-    """Create or replace configured rule groups in Grafana."""
+    """Verify and apply an exact rendered artifact to Grafana."""
     try:
-        site, groups = _render(site_file, template_dir)
+        site = load_site(site_file)
         _assert_remote_ready(site.grafana["folder_uid"])
+        bundle = load_bundle(site, artifact_dir)
         url, token = _credentials()
         client = GrafanaClient(url, token)
         identity = client.whoami()
@@ -120,7 +136,7 @@ def deploy(
             "Authenticated as "
             f"[bold]{identity.get('login') or identity.get('name') or identity.get('email')}[/bold]"
         )
-        for group in groups:
+        for group in bundle.groups:
             result = client.apply_group(site.grafana["folder_uid"], group.name, group.payload)
             console.print(f"[green]Applied[/green] {result.group} (HTTP {result.status_code})")
     except AlertManagerError as exc:
