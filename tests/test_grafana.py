@@ -34,6 +34,32 @@ def test_get_group_returns_none_for_404() -> None:
 
 
 @responses.activate
+def test_site_preflight_endpoints_use_exact_encoded_uids() -> None:
+    responses.get(
+        "https://grafana.example/api/org/",
+        json={"id": 10, "name": "SBCP"},
+    )
+    responses.get(
+        "https://grafana.example/api/folders/folder%2Fuid",
+        json={"uid": "folder/uid", "title": "Alerts"},
+    )
+    responses.get(
+        "https://grafana.example/api/datasources/uid/prom%2Fmain",
+        json={"uid": "prom/main", "name": "Prometheus", "type": "prometheus"},
+    )
+    client = GrafanaClient("https://grafana.example", "secret")
+
+    assert client.current_org()["id"] == 10
+    assert client.get_folder("folder/uid")["title"] == "Alerts"
+    assert client.get_datasource("prom/main")["type"] == "prometheus"
+
+    assert all(
+        call.request.headers["Authorization"] == "Bearer secret"
+        for call in responses.calls
+    )
+
+
+@responses.activate
 def test_delete_group_uses_exact_encoded_endpoint() -> None:
     responses.delete(
         "https://grafana.example/api/v1/provisioning/folder/folder%2Fuid/rule-groups/old%20group",

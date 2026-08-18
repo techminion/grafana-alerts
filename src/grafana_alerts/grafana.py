@@ -80,6 +80,28 @@ class GrafanaClient:
             raise GrafanaApiError("Grafana /api/user returned an unexpected response")
         return body
 
+    def current_org(self) -> dict[str, Any]:
+        body = self._request("GET", "/api/org/").json()
+        if not isinstance(body, dict):
+            raise GrafanaApiError("Grafana /api/org/ returned an unexpected response")
+        return body
+
+    def get_folder(self, folder_uid: str) -> dict[str, Any]:
+        path = f"/api/folders/{quote(folder_uid, safe='')}"
+        body = self._request("GET", path).json()
+        if not isinstance(body, dict):
+            raise GrafanaApiError(f"Grafana returned an unexpected folder for {folder_uid}")
+        return body
+
+    def get_datasource(self, datasource_uid: str) -> dict[str, Any]:
+        path = f"/api/datasources/uid/{quote(datasource_uid, safe='')}"
+        body = self._request("GET", path).json()
+        if not isinstance(body, dict):
+            raise GrafanaApiError(
+                f"Grafana returned an unexpected data source for {datasource_uid}"
+            )
+        return body
+
     def list_datasources(self) -> list[dict[str, Any]]:
         """Return data sources visible to the authenticated Grafana identity."""
         body = self._request("GET", "/api/datasources").json()
