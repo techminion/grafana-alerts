@@ -22,6 +22,20 @@ class FakeGrafanaClient:
     def whoami(self) -> dict[str, str]:
         return {"login": "service-account"}
 
+    def current_org(self) -> dict[str, object]:
+        return {"id": 1, "name": "Main Org"}
+
+    def get_folder(self, folder_uid: str) -> dict[str, object]:
+        return {"uid": folder_uid, "title": "Infrastructure Alerts"}
+
+    def get_datasource(self, datasource_uid: str) -> dict[str, object]:
+        return {
+            "uid": datasource_uid,
+            "name": "Prometheus",
+            "type": "prometheus",
+            "orgId": 1,
+        }
+
     def get_group(self, folder_uid: str, group: str) -> dict[str, object] | None:
         assert folder_uid == "infrastructure-alerts"
         return self.current if group == "retired" else None

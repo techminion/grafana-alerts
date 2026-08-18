@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from dataclasses import asdict
 from pathlib import Path
 from typing import Annotated
 
@@ -26,6 +27,7 @@ from grafana_alerts.deployment_plan import (
 )
 from grafana_alerts.exceptions import AlertManagerError
 from grafana_alerts.grafana import GrafanaClient
+from grafana_alerts.preflight import PreflightReport, run_preflight
 from grafana_alerts.renderer import render_site
 from grafana_alerts.semantic import compare_group
 
@@ -90,6 +92,12 @@ def _authenticated_client() -> GrafanaClient:
     client = GrafanaClient(url, token)
     client.whoami()
     return client
+
+
+def _site_preflight(site) -> tuple[GrafanaClient, PreflightReport]:
+    url, token = _credentials()
+    client = GrafanaClient(url, token)
+    return client, run_preflight(site, client)
 
 
 def _filtered(values: list[str], search: str | None, limit: int) -> list[str]:
@@ -209,6 +217,41 @@ def whoami() -> None:
         console.print(f"[red]Authentication failed:[/red] {exc}")
         raise typer.Exit(1) from exc
     console.print_json(json.dumps(identity))
+
+
+@app.command()
+def preflight(
+    site_file: Annotated[Path, typer.Argument(exists=True, readable=True)],
+    json_output: Annotated[bool, typer.Option("--json", help="Emit JSON output.")] = False,
+) -> None:
+    """Verify token organization, folder, and data sources for a site."""
+    try:
+        site = load_site(site_file)
+        _assert_remote_ready(site.grafana["folder_uid"])
+        _, report = _site_preflight(site)
+    except AlertManagerError as exc:
+        console.print(f"[red]Preflight failed:[/red] {exc}")
+        raise typer.Exit(1) from exc
+
+    if json_output:
+        console.print_json(json.dumps(asdict(report)))
+        return
+    table = Table("Check", "Configured", "Grafana")
+    table.add_row("identity", "token", report.identity)
+    table.add_row(
+        "organization", str(report.org_id), f"{report.org_id} ({report.org_name})"
+    )
+    table.add_row(
+        "folder", report.folder_uid, f"{report.folder_uid} ({report.folder_title})"
+    )
+    for datasource in report.datasources:
+        table.add_row(
+            f"datasource:{datasource.key}",
+            datasource.uid,
+            f"{datasource.uid} ({datasource.name}, {datasource.type})",
+        )
+    console.print(table)
+    console.print(f"[green]Preflight passed[/green] for {report.site}")
 
 
 @app.command()
@@ -438,9 +481,7 @@ def plan(
         site = load_site(site_file)
         _assert_remote_ready(site.grafana["folder_uid"])
         bundle = load_bundle(site, artifact_dir)
-        url, token = _credentials()
-        client = GrafanaClient(url, token)
-        client.whoami()
+        client, _ = _site_preflight(site)
         table = Table("Group", "Action")
         comparisons = []
         for group in bundle.groups:
@@ -487,9 +528,7 @@ def deploy(
         site = load_site(site_file)
         _assert_remote_ready(site.grafana["folder_uid"])
         bundle = load_bundle(site, artifact_dir)
-        url, token = _credentials()
-        client = GrafanaClient(url, token)
-        identity = client.whoami()
+        client, preflight_report = _site_preflight(site)
         deployment_plan = None
         if prune_plan is not None or confirm_prune is not None:
             if prune_plan is None:
@@ -506,7 +545,8 @@ def deploy(
             verify_live_prune_candidates(site, deployment_plan, client)
         console.print(
             "Authenticated as "
-            f"[bold]{identity.get('login') or identity.get('name') or identity.get('email')}[/bold]"
+            f"[bold]{preflight_report.identity}[/bold] in organization "
+            f"[bold]{preflight_report.org_id}[/bold]"
         )
         for group in bundle.groups:
             result = client.apply_group(site.grafana["folder_uid"], group.name, group.payload)
