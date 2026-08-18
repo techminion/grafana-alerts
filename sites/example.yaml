@@ -19,6 +19,11 @@ labels:
   site: example
   team: platform
 
+# Exact group names that may be deleted only after a reviewed `plan --prune`.
+# An empty list keeps pruning disabled for every group.
+prune:
+  allow_groups: []
+
 groups:
   - name: host-health
     template: host-health.yaml.j2
@@ -32,4 +37,3 @@ groups:
     memory_severity: critical
     memory_query: >-
       (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
-

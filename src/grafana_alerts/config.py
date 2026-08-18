@@ -23,6 +23,7 @@ class SiteConfig:
     grafana: dict[str, Any]
     defaults: dict[str, Any]
     labels: dict[str, str]
+    prune_allowlist: tuple[str, ...]
     groups: tuple[GroupConfig, ...]
 
     def template_context(self, group: GroupConfig) -> dict[str, Any]:
@@ -106,11 +107,23 @@ def load_site(path: str | Path) -> SiteConfig:
     if not isinstance(defaults, dict):
         raise ConfigError("defaults must be a mapping")
 
+    prune = raw.get("prune", {})
+    if not isinstance(prune, dict):
+        raise ConfigError("prune must be a mapping")
+    prune_allowlist = prune.get("allow_groups", [])
+    if not isinstance(prune_allowlist, list) or not all(
+        isinstance(name, str) and name.strip() for name in prune_allowlist
+    ):
+        raise ConfigError("prune.allow_groups must be a list of non-empty group names")
+    if len(prune_allowlist) != len(set(prune_allowlist)):
+        raise ConfigError("prune.allow_groups must not contain duplicates")
+
     return SiteConfig(
         path=site_path,
         name=raw["site"],
         grafana=raw["grafana"],
         defaults=defaults,
         labels=labels,
+        prune_allowlist=tuple(prune_allowlist),
         groups=tuple(groups),
     )
