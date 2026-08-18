@@ -3,7 +3,6 @@ from __future__ import annotations
 import difflib
 import json
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 VOLATILE_KEYS = {"id", "provenance", "updated", "version"}
@@ -65,23 +64,3 @@ def compare_group(
     )
     return Comparison(group=name, action="update", diff=diff + "\n")
 
-
-def write_plan(comparisons: list[Comparison], output_dir: str | Path) -> Path:
-    directory = Path(output_dir)
-    directory.mkdir(parents=True, exist_ok=True)
-    summary = {
-        "schemaVersion": 1,
-        "groups": [
-            {"name": comparison.group, "action": comparison.action}
-            for comparison in comparisons
-        ],
-    }
-    summary_path = directory / "plan.json"
-    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    for comparison in comparisons:
-        if comparison.diff:
-            (directory / f"{comparison.group}.diff").write_text(
-                comparison.diff,
-                encoding="utf-8",
-            )
-    return summary_path

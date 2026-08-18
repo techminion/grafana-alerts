@@ -12,6 +12,7 @@ def test_load_example_site() -> None:
     assert site.name == "example"
     assert site.grafana["org_id"] == 1
     assert site.groups[0].name == "host-health"
+    assert site.prune_allowlist == ()
 
 
 def test_duplicate_group_names_are_rejected(tmp_path: Path) -> None:
@@ -35,3 +36,24 @@ groups:
     with pytest.raises(ConfigError, match="Duplicate group name"):
         load_site(site_file)
 
+
+def test_duplicate_prune_allowlist_names_are_rejected(tmp_path: Path) -> None:
+    site_file = tmp_path / "duplicate-prune.yaml"
+    site_file.write_text(
+        """
+site: duplicate-prune
+grafana:
+  org_id: 1
+  folder_uid: alerts
+  datasource_uid: prometheus
+prune:
+  allow_groups: [retired, retired]
+groups:
+  - name: active
+    template: active.yaml.j2
+""".strip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ConfigError, match="must not contain duplicates"):
+        load_site(site_file)

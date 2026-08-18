@@ -34,6 +34,21 @@ def test_get_group_returns_none_for_404() -> None:
 
 
 @responses.activate
+def test_delete_group_uses_exact_encoded_endpoint() -> None:
+    responses.delete(
+        "https://grafana.example/api/v1/provisioning/folder/folder%2Fuid/rule-groups/old%20group",
+        status=204,
+    )
+
+    result = GrafanaClient("https://grafana.example", "secret").delete_group(
+        "folder/uid", "old group"
+    )
+
+    assert result.status_code == 204
+    assert responses.calls[0].request.headers["Authorization"] == "Bearer secret"
+
+
+@responses.activate
 def test_list_datasources_uses_token() -> None:
     responses.get(
         "https://grafana.example/api/datasources",

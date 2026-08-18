@@ -18,10 +18,16 @@ from grafana_alerts.builder import (
     write_site_with_alert,
 )
 from grafana_alerts.config import load_site
+from grafana_alerts.deployment_plan import (
+    collect_prune_candidates,
+    load_plan,
+    verify_live_prune_candidates,
+    write_plan,
+)
 from grafana_alerts.exceptions import AlertManagerError
 from grafana_alerts.grafana import GrafanaClient
 from grafana_alerts.renderer import render_site
-from grafana_alerts.semantic import compare_group, write_plan
+from grafana_alerts.semantic import compare_group
 
 app = typer.Typer(no_args_is_help=True, help="Render, validate, and deploy Grafana alerts.")
 console = Console()
@@ -422,6 +428,10 @@ def plan(
         typer.Option("--artifact-dir", exists=True, file_okay=False, readable=True),
     ] = ...,
     output_dir: Annotated[Path, typer.Option("--output", "-o")] = Path("plan"),
+    prune: Annotated[
+        bool,
+        typer.Option(help="Plan deletion only for absent, explicitly allowlisted groups."),
+    ] = False,
 ) -> None:
     """Compare a rendered artifact with Grafana without changing Grafana."""
     try:
@@ -438,7 +448,14 @@ def plan(
             comparison = compare_group(group.name, group.payload, current)
             comparisons.append(comparison)
             table.add_row(group.name, comparison.action)
-        plan_path = write_plan(comparisons, output_dir)
+        prune_candidates = (
+            collect_prune_candidates(site, bundle, client) if prune else ()
+        )
+        for candidate in prune_candidates:
+            table.add_row(candidate.name, "delete (allowlisted)")
+        plan_path = write_plan(
+            comparisons, prune_candidates, site, bundle, output_dir
+        )
     except AlertManagerError as exc:
         console.print(f"[red]Plan failed:[/red] {exc}")
         raise typer.Exit(1) from exc
@@ -453,6 +470,17 @@ def deploy(
         Path,
         typer.Option("--artifact-dir", exists=True, file_okay=False, readable=True),
     ] = ...,
+    prune_plan: Annotated[
+        Path | None,
+        typer.Option("--prune-plan", exists=True, dir_okay=False, readable=True),
+    ] = None,
+    confirm_prune: Annotated[
+        str | None,
+        typer.Option(
+            "--confirm-prune",
+            help='Must equal "DELETE ALLOWLISTED GROUPS" to execute a prune plan.',
+        ),
+    ] = None,
 ) -> None:
     """Verify and apply an exact rendered artifact to Grafana."""
     try:
@@ -462,6 +490,20 @@ def deploy(
         url, token = _credentials()
         client = GrafanaClient(url, token)
         identity = client.whoami()
+        deployment_plan = None
+        if prune_plan is not None or confirm_prune is not None:
+            if prune_plan is None:
+                raise AlertManagerError("--confirm-prune requires --prune-plan")
+            if confirm_prune != "DELETE ALLOWLISTED GROUPS":
+                raise AlertManagerError(
+                    '--confirm-prune must equal "DELETE ALLOWLISTED GROUPS"'
+                )
+            deployment_plan = load_plan(site, bundle, prune_plan)
+            if deployment_plan.prune and os.getenv("PRUNE_ENABLED", "") != "true":
+                raise AlertManagerError(
+                    "PRUNE_ENABLED must equal true before allowlisted groups can be deleted"
+                )
+            verify_live_prune_candidates(site, deployment_plan, client)
         console.print(
             "Authenticated as "
             f"[bold]{identity.get('login') or identity.get('name') or identity.get('email')}[/bold]"
@@ -469,6 +511,15 @@ def deploy(
         for group in bundle.groups:
             result = client.apply_group(site.grafana["folder_uid"], group.name, group.payload)
             console.print(f"[green]Applied[/green] {result.group} (HTTP {result.status_code})")
+        if deployment_plan is not None:
+            for candidate in deployment_plan.prune:
+                result = client.delete_group(
+                    site.grafana["folder_uid"], candidate.name
+                )
+                console.print(
+                    f"[red]Deleted allowlisted group[/red] {result.group} "
+                    f"(HTTP {result.status_code})"
+                )
     except AlertManagerError as exc:
         console.print(f"[red]Deploy failed:[/red] {exc}")
         raise typer.Exit(1) from exc

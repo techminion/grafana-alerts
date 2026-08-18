@@ -16,6 +16,12 @@ class ApplyResult:
     status_code: int
 
 
+@dataclass(frozen=True)
+class DeleteResult:
+    group: str
+    status_code: int
+
+
 class GrafanaClient:
     """Client for Grafana's legacy provisioning API.
 
@@ -179,6 +185,10 @@ class GrafanaClient:
     def apply_group(self, folder_uid: str, group: str, payload: dict[str, Any]) -> ApplyResult:
         response = self._request("PUT", self._group_path(folder_uid, group), json=payload)
         return ApplyResult(group=group, status_code=response.status_code)
+
+    def delete_group(self, folder_uid: str, group: str) -> DeleteResult:
+        response = self._request("DELETE", self._group_path(folder_uid, group))
+        return DeleteResult(group=group, status_code=response.status_code)
 
     @staticmethod
     def _group_path(folder_uid: str, group: str) -> str:
