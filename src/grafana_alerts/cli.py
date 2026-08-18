@@ -72,6 +72,30 @@ def _assert_remote_ready(folder_uid: object) -> None:
         )
 
 
+def _authenticated_client() -> GrafanaClient:
+    url, token = _credentials()
+    client = GrafanaClient(url, token)
+    client.whoami()
+    return client
+
+
+def _filtered(values: list[str], search: str | None, limit: int) -> list[str]:
+    if search:
+        needle = search.casefold()
+        values = [value for value in values if needle in value.casefold()]
+    return sorted(values)[:limit]
+
+
+def _print_values(title: str, values: list[str], json_output: bool) -> None:
+    if json_output:
+        console.print_json(json.dumps(values))
+        return
+    table = Table(title)
+    for value in values:
+        table.add_row(value)
+    console.print(table)
+
+
 @app.command()
 def whoami() -> None:
     """Show the identity represented by the configured Grafana token."""
@@ -82,6 +106,113 @@ def whoami() -> None:
         console.print(f"[red]Authentication failed:[/red] {exc}")
         raise typer.Exit(1) from exc
     console.print_json(json.dumps(identity))
+
+
+@app.command()
+def datasources(
+    json_output: Annotated[bool, typer.Option("--json", help="Emit JSON output.")] = False,
+) -> None:
+    """List data sources visible to the configured Grafana token."""
+    try:
+        sources = _authenticated_client().list_datasources()
+    except AlertManagerError as exc:
+        console.print(f"[red]Data source discovery failed:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    if json_output:
+        console.print_json(json.dumps(sources))
+        return
+    table = Table("Name", "UID", "Type", "Default")
+    for source in sorted(sources, key=lambda item: str(item.get("name", ""))):
+        table.add_row(
+            str(source.get("name", "")),
+            str(source.get("uid", "")),
+            str(source.get("type", "")),
+            "yes" if source.get("isDefault") else "",
+        )
+    console.print(table)
+
+
+@app.command()
+def metrics(
+    datasource_uid: Annotated[str, typer.Option("--datasource", "-d")],
+    search: Annotated[str | None, typer.Option(help="Case-insensitive name filter.")] = None,
+    limit: Annotated[int, typer.Option(min=1, help="Maximum results to display.")] = 200,
+    json_output: Annotated[bool, typer.Option("--json", help="Emit JSON output.")] = False,
+) -> None:
+    """Discover Prometheus metric names through Grafana."""
+    try:
+        values = _filtered(
+            _authenticated_client().prometheus_metrics(datasource_uid), search, limit
+        )
+    except AlertManagerError as exc:
+        console.print(f"[red]Metric discovery failed:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    _print_values("Metric", values, json_output)
+
+
+@app.command()
+def labels(
+    datasource_uid: Annotated[str, typer.Option("--datasource", "-d")],
+    metric: Annotated[str | None, typer.Option(help="Scope labels to this metric.")] = None,
+    search: Annotated[str | None, typer.Option(help="Case-insensitive name filter.")] = None,
+    limit: Annotated[int, typer.Option(min=1, help="Maximum results to display.")] = 200,
+    json_output: Annotated[bool, typer.Option("--json", help="Emit JSON output.")] = False,
+) -> None:
+    """Discover Prometheus label names through Grafana."""
+    try:
+        values = _filtered(
+            _authenticated_client().prometheus_labels(datasource_uid, metric=metric),
+            search,
+            limit,
+        )
+    except AlertManagerError as exc:
+        console.print(f"[red]Label discovery failed:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    _print_values("Label", values, json_output)
+
+
+@app.command("label-values")
+def label_values(
+    label: Annotated[str, typer.Argument(help="Prometheus label name.")],
+    datasource_uid: Annotated[str, typer.Option("--datasource", "-d")],
+    metric: Annotated[str | None, typer.Option(help="Scope values to this metric.")] = None,
+    search: Annotated[str | None, typer.Option(help="Case-insensitive value filter.")] = None,
+    limit: Annotated[int, typer.Option(min=1, help="Maximum results to display.")] = 200,
+    json_output: Annotated[bool, typer.Option("--json", help="Emit JSON output.")] = False,
+) -> None:
+    """Discover values for a Prometheus label through Grafana."""
+    try:
+        values = _filtered(
+            _authenticated_client().prometheus_label_values(
+                datasource_uid, label, metric=metric
+            ),
+            search,
+            limit,
+        )
+    except AlertManagerError as exc:
+        console.print(f"[red]Label value discovery failed:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    _print_values("Value", values, json_output)
+
+
+@app.command("test-query")
+def test_query(
+    datasource_uid: Annotated[str, typer.Option("--datasource", "-d")],
+    expression: Annotated[str, typer.Option("--expr", help="PromQL expression to test.")],
+    time: Annotated[
+        str | None,
+        typer.Option(help="Optional RFC3339 or Unix evaluation timestamp."),
+    ] = None,
+) -> None:
+    """Run an instant PromQL query through Grafana and print its result."""
+    try:
+        result = _authenticated_client().query_prometheus(
+            datasource_uid, expression, time=time
+        )
+    except AlertManagerError as exc:
+        console.print(f"[red]PromQL query failed:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    console.print_json(json.dumps(result))
 
 
 @app.command()
