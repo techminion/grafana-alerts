@@ -10,6 +10,13 @@ from rich.console import Console
 from rich.table import Table
 
 from grafana_alerts.artifacts import load_bundle, write_bundle
+from grafana_alerts.builder import (
+    AlertDefinition,
+    generated_uid,
+    prometheus_selector,
+    slugify,
+    write_site_with_alert,
+)
 from grafana_alerts.config import load_site
 from grafana_alerts.exceptions import AlertManagerError
 from grafana_alerts.grafana import GrafanaClient
@@ -94,6 +101,96 @@ def _print_values(title: str, values: list[str], json_output: bool) -> None:
     for value in values:
         table.add_row(value)
     console.print(table)
+
+
+def _numbered_choice(
+    prompt: str,
+    values: list[str],
+    *,
+    default: int = 1,
+) -> str:
+    if not values:
+        raise AlertManagerError(f"No values are available for {prompt.casefold()}")
+    table = Table("#", prompt)
+    for index, value in enumerate(values, start=1):
+        table.add_row(str(index), value)
+    console.print(table)
+    while True:
+        choice = typer.prompt(f"{prompt} number", default=default)
+        try:
+            return values[int(choice) - 1]
+        except (ValueError, IndexError):
+            console.print(f"[red]Choose a number from 1 to {len(values)}.[/red]")
+
+
+def _choose_datasource(
+    sources: list[dict[str, object]],
+    requested_uid: str | None,
+    configured_uid: object,
+) -> str:
+    prometheus_sources = [
+        source for source in sources if source.get("type") == "prometheus" and source.get("uid")
+    ]
+    if requested_uid:
+        selected = next(
+            (source for source in prometheus_sources if source.get("uid") == requested_uid),
+            None,
+        )
+        if selected is None:
+            raise AlertManagerError(
+                f"Prometheus data source {requested_uid!r} is not visible to this Grafana token"
+            )
+        return requested_uid
+    if not prometheus_sources:
+        raise AlertManagerError("No Prometheus data sources are visible to this Grafana token")
+
+    labels = [
+        f"{source.get('name', '')} ({source['uid']})" for source in prometheus_sources
+    ]
+    default = next(
+        (
+            index
+            for index, source in enumerate(prometheus_sources, start=1)
+            if source.get("uid") == configured_uid
+        ),
+        1,
+    )
+    selected_label = _numbered_choice("Prometheus data source", labels, default=default)
+    return str(prometheus_sources[labels.index(selected_label)]["uid"])
+
+
+def _choose_metric(client: GrafanaClient, datasource_uid: str) -> str:
+    metrics = client.prometheus_metrics(datasource_uid)
+    while True:
+        search = typer.prompt("Metric search", default="up")
+        matches = _filtered(metrics, search, 25)
+        if matches:
+            return _numbered_choice("Metric", matches)
+        console.print(f"[yellow]No metrics matched {search!r}; try another search.[/yellow]")
+
+
+def _prompt_matchers(
+    client: GrafanaClient,
+    datasource_uid: str,
+    metric: str,
+) -> list[tuple[str, str, str]]:
+    labels = sorted(
+        label
+        for label in client.prometheus_labels(datasource_uid, metric=metric)
+        if label != "__name__"
+    )
+    matchers: list[tuple[str, str, str]] = []
+    while labels and typer.confirm("Add a label matcher?", default=False):
+        label = _numbered_choice("Label", labels)
+        values = sorted(
+            client.prometheus_label_values(datasource_uid, label, metric=metric)
+        )[:25]
+        if values:
+            _print_values(f"Known {label} values (first 25)", values, False)
+        operator = typer.prompt("Matcher operator (=, !=, =~, !~)", default="=")
+        value = typer.prompt("Matcher value")
+        matchers.append((label, operator, value))
+    return matchers
 
 
 @app.command()
@@ -213,6 +310,108 @@ def test_query(
         console.print(f"[red]PromQL query failed:[/red] {exc}")
         raise typer.Exit(1) from exc
     console.print_json(json.dumps(result))
+
+
+@app.command("create-alert")
+def create_alert(
+    site_file: Annotated[Path, typer.Argument(exists=True, readable=True)],
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    template_dir: Annotated[Path, typer.Option("--templates", "-t")] = Path("templates"),
+    datasource_uid: Annotated[
+        str | None, typer.Option("--datasource", "-d")
+    ] = None,
+    metric: Annotated[str | None, typer.Option(help="Metric used to build a selector.")] = None,
+    expression: Annotated[str | None, typer.Option("--expr", help="PromQL expression.")] = None,
+    group_name: Annotated[str | None, typer.Option("--group")] = None,
+    title: Annotated[str | None, typer.Option()] = None,
+    uid: Annotated[str | None, typer.Option()] = None,
+    threshold: Annotated[float | None, typer.Option()] = None,
+    evaluator: Annotated[str | None, typer.Option(help="gt or lt.")] = None,
+    reducer: Annotated[str | None, typer.Option(help="last, avg, min, max, or sum.")] = None,
+    pending_for: Annotated[str | None, typer.Option("--pending-for")] = None,
+    severity: Annotated[str | None, typer.Option()] = None,
+    summary: Annotated[str | None, typer.Option()] = None,
+    description: Annotated[str | None, typer.Option()] = None,
+    force: Annotated[bool, typer.Option(help="Replace an existing output file.")] = False,
+) -> None:
+    """Interactively discover, test, and generate a Prometheus alert site config."""
+    try:
+        site = load_site(site_file)
+        client = _authenticated_client()
+        selected_datasource = _choose_datasource(
+            client.list_datasources(), datasource_uid, site.grafana.get("datasource_uid")
+        )
+
+        selected_metric = metric
+        if expression is None:
+            selected_metric = selected_metric or _choose_metric(client, selected_datasource)
+            matchers = _prompt_matchers(client, selected_datasource, selected_metric)
+            expression = typer.prompt(
+                "PromQL expression",
+                default=prometheus_selector(selected_metric, matchers),
+            )
+
+        query_result = client.query_prometheus(selected_datasource, expression)
+        result_type = query_result.get("resultType", "unknown")
+        result = query_result.get("result", [])
+        result_count = len(result) if isinstance(result, list) else 0
+        console.print(
+            f"[green]PromQL valid:[/green] {result_type}, {result_count} result(s)"
+        )
+
+        default_title = f"{selected_metric or 'PromQL'} alert"
+        title = title or typer.prompt("Alert title", default=default_title)
+        group_name = group_name or typer.prompt(
+            "Rule group name", default=f"generated-{slugify(title)}"
+        )
+        uid = uid or typer.prompt("Rule UID", default=generated_uid(title))
+        threshold = threshold if threshold is not None else typer.prompt(
+            "Threshold", default=1.0, type=float
+        )
+        evaluator = evaluator or typer.prompt("Evaluator (gt or lt)", default="gt")
+        reducer = reducer or typer.prompt(
+            "Reducer (last, avg, min, max, or sum)", default="last"
+        )
+        pending_for = pending_for or typer.prompt("Pending duration", default="5m")
+        severity = severity or typer.prompt("Severity", default="warning")
+        summary = summary or typer.prompt("Summary", default=title)
+        description = description or typer.prompt(
+            "Description",
+            default=f"{title}. Current value: {{{{ $values.B.Value }}}}",
+        )
+
+        defaults = site.defaults
+        definition = AlertDefinition(
+            group_name=group_name,
+            uid=uid,
+            title=title,
+            datasource_uid=selected_datasource,
+            expression=expression,
+            threshold=threshold,
+            evaluator=evaluator,
+            reducer=reducer,
+            pending_for=pending_for,
+            severity=severity,
+            summary=summary,
+            description=description,
+            evaluation_interval_seconds=int(
+                defaults.get("evaluation_interval_seconds", 60)
+            ),
+            query_window_seconds=int(defaults.get("query_window_seconds", 600)),
+            no_data_state=str(defaults.get("no_data_state", "NoData")),
+            exec_error_state=str(defaults.get("exec_error_state", "Error")),
+        )
+        destination = output or site_file.with_name(
+            f"{site_file.stem}-{slugify(group_name)}.yaml"
+        )
+        generated = write_site_with_alert(
+            site_file, destination, definition, template_dir, overwrite=force
+        )
+    except AlertManagerError as exc:
+        console.print(f"[red]Alert creation failed:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    console.print(f"[green]Generated and validated[/green] {generated}")
+    console.print(f"Next: grafana-alerts render {generated} --output build")
 
 
 @app.command()
