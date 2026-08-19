@@ -74,6 +74,7 @@ class ReceiptRecorder:
     deployment_plan_sha256: str | None = None
     pipeline: dict[str, str] = field(default_factory=pipeline_metadata)
     operations: list[dict[str, Any]] = field(default_factory=list)
+    rollback: dict[str, str] | None = None
 
     def target(self, site: str, org_id: int, folder_uid: str) -> None:
         self.site = site
@@ -100,6 +101,18 @@ class ReceiptRecorder:
             operation["error"] = error
         self.operations.append(operation)
 
+    def link_rollback(
+        self,
+        reason: str,
+        source_receipt_sha256: str,
+        rollback_plan_sha256: str,
+    ) -> None:
+        self.rollback = {
+            "reason": reason,
+            "sourceReceiptSha256": source_receipt_sha256,
+            "planSha256": rollback_plan_sha256,
+        }
+
     def payload(
         self,
         status: str,
@@ -107,7 +120,7 @@ class ReceiptRecorder:
         *,
         finished_at: str | None = None,
     ) -> dict[str, Any]:
-        return {
+        payload = {
             "schemaVersion": RECEIPT_SCHEMA_VERSION,
             "status": status,
             "startedAt": self.started_at,
@@ -122,6 +135,9 @@ class ReceiptRecorder:
             "error": error,
             "pipeline": self.pipeline,
         }
+        if self.rollback is not None:
+            payload["rollback"] = self.rollback
+        return payload
 
 
 def validate_receipt(payload: Any) -> dict[str, Any]:
@@ -186,6 +202,22 @@ def validate_receipt(payload: Any) -> dict[str, Any]:
             raise ConfigError("Deployment receipt operation has an invalid error")
     if payload["status"] == "failed" and not payload["error"]:
         raise ConfigError("Failed deployment receipt must include an error")
+    rollback = payload.get("rollback")
+    if rollback is not None:
+        if not isinstance(rollback, dict) or set(rollback) != {
+            "reason",
+            "sourceReceiptSha256",
+            "planSha256",
+        }:
+            raise ConfigError("Deployment receipt has invalid rollback metadata")
+        if not isinstance(rollback["reason"], str) or not rollback["reason"].strip():
+            raise ConfigError("Deployment receipt has invalid rollback reason")
+        for key in ("sourceReceiptSha256", "planSha256"):
+            if (
+                not isinstance(rollback[key], str)
+                or not _SHA256_PATTERN.fullmatch(rollback[key])
+            ):
+                raise ConfigError(f"Deployment receipt has invalid rollback {key}")
     return payload
 
 

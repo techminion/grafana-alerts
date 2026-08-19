@@ -3,6 +3,18 @@ parameters:
     displayName: Site configuration to deploy
     type: string
     default: sbcp
+  - name: rollback
+    displayName: Run as an audited rollback
+    type: boolean
+    default: false
+  - name: rollbackBuildId
+    displayName: Build ID containing the deployment receipt to roll back
+    type: string
+    default: "0"
+  - name: rollbackReason
+    displayName: Reason for rollback
+    type: string
+    default: ""
 
 trigger:
   branches:
@@ -57,6 +69,39 @@ stages:
               "sites/${{ parameters.site }}.yaml"
               --output "$(Build.ArtifactStagingDirectory)/rendered"
             displayName: Render selected site and manifest
+
+          - ${{ if eq(parameters.rollback, true) }}:
+              - task: DownloadPipelineArtifact@2
+                displayName: Download source deployment receipt
+                inputs:
+                  buildType: specific
+                  project: $(System.TeamProject)
+                  definition: $(System.DefinitionId)
+                  buildVersionToDownload: specific
+                  pipelineId: ${{ parameters.rollbackBuildId }}
+                  artifactName: deployment-receipt
+                  targetPath: $(Pipeline.Workspace)/rollback-source-receipt
+
+              - script: >-
+                  grafana-alerts rollback-plan
+                  "sites/${{ parameters.site }}.yaml"
+                  --artifact-dir "$(Build.ArtifactStagingDirectory)/rendered"
+                  --source-receipt "$(Pipeline.Workspace)/rollback-source-receipt/deployment-receipt.json"
+                  --reason "$ROLLBACK_REASON"
+                  --output "$(Build.ArtifactStagingDirectory)/rollback-plan"
+                displayName: Plan fingerprint-bound rollback
+                env:
+                  GRAFANA_URL: $(GRAFANA_URL)
+                  GRAFANA_TOKEN: $(GRAFANA_TOKEN)
+                  ROLLBACK_REASON: ${{ parameters.rollbackReason }}
+
+              - publish: $(Build.ArtifactStagingDirectory)/rollback-plan
+                artifact: grafana-rollback-plan
+                displayName: Publish reviewed rollback plan
+
+              - publish: $(Pipeline.Workspace)/rollback-source-receipt
+                artifact: rollback-source-receipt
+                displayName: Republish source deployment receipt
 
           # Optional authenticated read. Enable with PLAN_ENABLED=true.
           - script: >-
@@ -119,9 +164,17 @@ stages:
                 - download: current
                   artifact: rendered-alerts
 
-                - download: current
-                  artifact: grafana-plan
-                  condition: eq(variables['PRUNE_ENABLED'], 'true')
+                - ${{ if eq(parameters.rollback, false) }}:
+                    - download: current
+                      artifact: grafana-plan
+                      condition: eq(variables['PRUNE_ENABLED'], 'true')
+
+                - ${{ if eq(parameters.rollback, true) }}:
+                    - download: current
+                      artifact: grafana-rollback-plan
+
+                    - download: current
+                      artifact: rollback-source-receipt
 
                 - task: UsePythonVersion@0
                   inputs:
@@ -133,30 +186,46 @@ stages:
                     python -m pip install .
                   displayName: Install deployment CLI
 
-                - script: >-
-                    grafana-alerts deploy
-                    "sites/${{ parameters.site }}.yaml"
-                    --artifact-dir "$(Pipeline.Workspace)/rendered-alerts"
-                    --receipt "$(Agent.TempDirectory)/deployment-receipt/deployment-receipt.json"
-                  displayName: Verify and deploy reviewed artifact
-                  condition: ne(variables['PRUNE_ENABLED'], 'true')
-                  env:
-                    GRAFANA_URL: $(GRAFANA_URL)
-                    GRAFANA_TOKEN: $(GRAFANA_TOKEN)
+                - ${{ if eq(parameters.rollback, false) }}:
+                    - script: >-
+                        grafana-alerts deploy
+                        "sites/${{ parameters.site }}.yaml"
+                        --artifact-dir "$(Pipeline.Workspace)/rendered-alerts"
+                        --receipt "$(Agent.TempDirectory)/deployment-receipt/deployment-receipt.json"
+                      displayName: Verify and deploy reviewed artifact
+                      condition: ne(variables['PRUNE_ENABLED'], 'true')
+                      env:
+                        GRAFANA_URL: $(GRAFANA_URL)
+                        GRAFANA_TOKEN: $(GRAFANA_TOKEN)
 
-                - script: >-
-                    grafana-alerts deploy
-                    "sites/${{ parameters.site }}.yaml"
-                    --artifact-dir "$(Pipeline.Workspace)/rendered-alerts"
-                    --prune-plan "$(Pipeline.Workspace)/grafana-plan/plan.json"
-                    --confirm-prune "DELETE ALLOWLISTED GROUPS"
-                    --receipt "$(Agent.TempDirectory)/deployment-receipt/deployment-receipt.json"
-                  displayName: Deploy artifact and prune reviewed allowlist
-                  condition: eq(variables['PRUNE_ENABLED'], 'true')
-                  env:
-                    GRAFANA_URL: $(GRAFANA_URL)
-                    GRAFANA_TOKEN: $(GRAFANA_TOKEN)
-                    PRUNE_ENABLED: $(PRUNE_ENABLED)
+                    - script: >-
+                        grafana-alerts deploy
+                        "sites/${{ parameters.site }}.yaml"
+                        --artifact-dir "$(Pipeline.Workspace)/rendered-alerts"
+                        --prune-plan "$(Pipeline.Workspace)/grafana-plan/plan.json"
+                        --confirm-prune "DELETE ALLOWLISTED GROUPS"
+                        --receipt "$(Agent.TempDirectory)/deployment-receipt/deployment-receipt.json"
+                      displayName: Deploy artifact and prune reviewed allowlist
+                      condition: eq(variables['PRUNE_ENABLED'], 'true')
+                      env:
+                        GRAFANA_URL: $(GRAFANA_URL)
+                        GRAFANA_TOKEN: $(GRAFANA_TOKEN)
+                        PRUNE_ENABLED: $(PRUNE_ENABLED)
+
+                - ${{ if eq(parameters.rollback, true) }}:
+                    - script: >-
+                        grafana-alerts rollback
+                        "sites/${{ parameters.site }}.yaml"
+                        --artifact-dir "$(Pipeline.Workspace)/rendered-alerts"
+                        --source-receipt "$(Pipeline.Workspace)/rollback-source-receipt/deployment-receipt.json"
+                        --plan "$(Pipeline.Workspace)/grafana-rollback-plan/rollback-plan.json"
+                        --confirm-rollback "ROLL BACK REVIEWED ARTIFACT"
+                        --receipt "$(Agent.TempDirectory)/deployment-receipt/deployment-receipt.json"
+                      displayName: Execute reviewed rollback
+                      env:
+                        GRAFANA_URL: $(GRAFANA_URL)
+                        GRAFANA_TOKEN: $(GRAFANA_TOKEN)
+                        ROLLBACK_ENABLED: "true"
 
                 - publish: $(Agent.TempDirectory)/deployment-receipt
                   artifact: deployment-receipt
