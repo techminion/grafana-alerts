@@ -17,9 +17,17 @@ runner = CliRunner()
 
 
 class FakeGrafanaClient:
-    def __init__(self, current: dict[str, object], *, fail_apply: bool = False) -> None:
+    def __init__(
+        self,
+        current: dict[str, object],
+        *,
+        fail_apply: bool = False,
+        fail_query: bool = False,
+    ) -> None:
         self.current = current
+        self.groups: dict[str, dict[str, object]] = {"retired": current}
         self.fail_apply = fail_apply
+        self.fail_query = fail_query
         self.applied: list[str] = []
         self.deleted: list[str] = []
 
@@ -42,7 +50,7 @@ class FakeGrafanaClient:
 
     def get_group(self, folder_uid: str, group: str) -> dict[str, object] | None:
         assert folder_uid == "infrastructure-alerts"
-        return self.current if group == "retired" else None
+        return self.groups.get(group)
 
     def apply_group(
         self, folder_uid: str, group: str, payload: dict[str, object]
@@ -50,11 +58,20 @@ class FakeGrafanaClient:
         if self.fail_apply:
             raise GrafanaApiError("Grafana rejected the rule group")
         self.applied.append(group)
+        self.groups[group] = payload
         return SimpleNamespace(group=group, status_code=202)
 
     def delete_group(self, folder_uid: str, group: str) -> SimpleNamespace:
         self.deleted.append(group)
+        self.groups.pop(group, None)
         return SimpleNamespace(group=group, status_code=204)
+
+    def query_prometheus(
+        self, datasource_uid: str, expression: str, *, time: str | None = None
+    ) -> dict[str, object]:
+        if self.fail_query:
+            raise GrafanaApiError("Prometheus rejected the deployed query")
+        return {"resultType": "vector", "result": []}
 
 
 def _prune_inputs(tmp_path: Path):
@@ -147,6 +164,7 @@ def test_deploy_applies_artifact_then_deletes_exact_reviewed_group(
     assert payload["identity"] == "service-account"
     assert payload["artifactManifestSha256"]
     assert payload["deploymentPlanSha256"]
+    assert payload["verification"]["status"] == "succeeded"
     assert [(item["action"], item["group"]) for item in payload["operations"]] == [
         ("apply", "host-health"),
         ("delete", "retired"),
@@ -186,3 +204,40 @@ def test_deploy_records_partial_failure_without_exposing_token(
         }
     ]
     assert "secret" not in json.dumps(payload)
+
+
+def test_deploy_fails_and_records_post_deployment_query_verification(
+    tmp_path: Path, monkeypatch
+) -> None:
+    site_path, bundle, _, current = _prune_inputs(tmp_path)
+    fake = FakeGrafanaClient(current, fail_query=True)
+    monkeypatch.setattr(cli, "GrafanaClient", lambda url, token: fake)
+    receipt = tmp_path / "verification-failure-receipt.json"
+
+    result = runner.invoke(
+        cli.app,
+        [
+            "deploy",
+            str(site_path),
+            "--artifact-dir",
+            str(bundle.directory),
+            "--verification-attempts",
+            "1",
+            "--verification-delay",
+            "0",
+            "--receipt",
+            str(receipt),
+        ],
+        env={"GRAFANA_URL": "https://grafana.example", "GRAFANA_TOKEN": "secret"},
+    )
+
+    assert result.exit_code == 1
+    assert "Post-deployment verification failed" in result.output
+    assert fake.applied == ["host-health"]
+    payload = load_and_verify_receipt(receipt)
+    assert payload["status"] == "failed"
+    assert payload["verification"]["status"] == "failed"
+    assert all(
+        query["error"] == "Prometheus rejected the deployed query"
+        for query in payload["verification"]["queries"]
+    )

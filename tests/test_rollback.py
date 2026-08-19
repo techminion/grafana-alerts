@@ -60,11 +60,18 @@ class FakeGrafanaClient:
         self, folder_uid: str, group: str, payload: dict[str, object]
     ) -> SimpleNamespace:
         self.applied.append(group)
+        self.groups[group] = payload
         return SimpleNamespace(group=group, status_code=202)
 
     def delete_group(self, folder_uid: str, group: str) -> SimpleNamespace:
         self.deleted.append(group)
+        self.groups.pop(group, None)
         return SimpleNamespace(group=group, status_code=204)
+
+    def query_prometheus(
+        self, datasource_uid: str, expression: str, *, time: str | None = None
+    ) -> dict[str, object]:
+        return {"resultType": "vector", "result": []}
 
 
 def _rollback_inputs(tmp_path: Path):
@@ -218,6 +225,7 @@ def test_rollback_restores_target_and_removes_introduced_group(
     assert payload["status"] == "succeeded"
     assert payload["identity"] == "rollback-service"
     assert payload["rollback"]["reason"] == "Revert regression"
+    assert payload["verification"]["status"] == "succeeded"
     assert [(item["action"], item["group"]) for item in payload["operations"]] == [
         ("apply", "host-health"),
         ("delete", "introduced-group"),

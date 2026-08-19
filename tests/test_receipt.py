@@ -108,3 +108,60 @@ def test_receipt_validates_linked_rollback_metadata(tmp_path: Path) -> None:
         "sourceReceiptSha256": "c" * 64,
         "planSha256": "d" * 64,
     }
+
+
+def test_receipt_validates_post_deployment_verification(tmp_path: Path) -> None:
+    path = tmp_path / "verified-receipt.json"
+    recorder = _recorder()
+    recorder.record_verification(
+        {
+            "status": "succeeded",
+            "groups": [
+                {
+                    "group": "host-health",
+                    "targetState": "present",
+                    "status": "succeeded",
+                    "attempts": 1,
+                    "desiredSha256": "e" * 64,
+                    "liveSha256": "e" * 64,
+                }
+            ],
+            "queries": [
+                {
+                    "datasourceUid": "prometheus-main",
+                    "expressionSha256": "f" * 64,
+                    "references": ["host-health/rule:A"],
+                    "status": "succeeded",
+                    "attempts": 1,
+                    "resultType": "vector",
+                    "resultCount": 0,
+                }
+            ],
+        }
+    )
+
+    write_receipt(path, recorder.payload("succeeded"))
+    payload = load_and_verify_receipt(path)
+
+    assert payload["verification"]["status"] == "succeeded"
+
+
+def test_receipt_rejects_inconsistent_verification_status() -> None:
+    recorder = _recorder()
+    recorder.record_verification(
+        {
+            "status": "failed",
+            "groups": [
+                {
+                    "group": "host-health",
+                    "targetState": "present",
+                    "status": "succeeded",
+                    "attempts": 1,
+                }
+            ],
+            "queries": [],
+        }
+    )
+
+    with pytest.raises(ConfigError, match="status is inconsistent"):
+        write_receipt(Path("unused.json"), recorder.payload("failed", "failed"))

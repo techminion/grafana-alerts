@@ -42,6 +42,7 @@ from grafana_alerts.rollback import (
     write_rollback_plan,
 )
 from grafana_alerts.semantic import compare_group
+from grafana_alerts.verification import VerificationReport, verify_deployment
 
 app = typer.Typer(no_args_is_help=True, help="Render, validate, and deploy Grafana alerts.")
 console = Console()
@@ -110,6 +111,35 @@ def _site_preflight(site) -> tuple[GrafanaClient, PreflightReport]:
     url, token = _credentials()
     client = GrafanaClient(url, token)
     return client, run_preflight(site, client)
+
+
+def _datasource_types(report: PreflightReport) -> dict[str, str]:
+    return {datasource.uid: datasource.type for datasource in report.datasources}
+
+
+def _require_verified(
+    recorder: ReceiptRecorder,
+    report: VerificationReport,
+) -> None:
+    recorder.record_verification(report.payload())
+    if report.status == "succeeded":
+        return
+    failed_groups = [check.group for check in report.groups if check.status == "failed"]
+    failed_queries = [
+        reference
+        for check in report.queries
+        if check.status == "failed"
+        for reference in check.references
+    ]
+    details: list[str] = []
+    if failed_groups:
+        details.append(f"groups: {', '.join(failed_groups)}")
+    if failed_queries:
+        details.append(f"queries: {', '.join(failed_queries)}")
+    raise AlertManagerError(
+        "Post-deployment verification failed"
+        + (f" ({'; '.join(details)})" if details else "")
+    )
 
 
 def _filtered(values: list[str], search: str | None, limit: int) -> list[str]:
@@ -541,6 +571,22 @@ def deploy(
             help="Write an exclusive deployment receipt and SHA-256 sidecar.",
         ),
     ] = None,
+    verification_attempts: Annotated[
+        int,
+        typer.Option("--verification-attempts", min=1),
+    ] = 5,
+    verification_delay: Annotated[
+        float,
+        typer.Option("--verification-delay", min=0),
+    ] = 2.0,
+    query_attempts: Annotated[
+        int,
+        typer.Option("--query-attempts", min=1),
+    ] = 1,
+    query_workers: Annotated[
+        int,
+        typer.Option("--query-workers", min=1, max=32),
+    ] = 8,
 ) -> None:
     """Verify and apply an exact rendered artifact to Grafana."""
     recorder = ReceiptRecorder()
@@ -607,6 +653,28 @@ def deploy(
                     f"[red]Deleted allowlisted group[/red] {result.group} "
                     f"(HTTP {result.status_code})"
                 )
+        expected_absent = (
+            tuple(candidate.name for candidate in deployment_plan.prune)
+            if deployment_plan is not None
+            else ()
+        )
+        verification = verify_deployment(
+            bundle,
+            str(site.grafana["folder_uid"]),
+            _datasource_types(preflight_report),
+            client,
+            expected_absent=expected_absent,
+            attempts=verification_attempts,
+            delay_seconds=verification_delay,
+            query_attempts=query_attempts,
+            query_workers=query_workers,
+        )
+        _require_verified(recorder, verification)
+        console.print(
+            "[green]Post-deployment verification passed[/green] "
+            f"({len(verification.groups)} group(s), "
+            f"{len(verification.queries)} unique PromQL query(s))"
+        )
     except AlertManagerError as exc:
         failure = exc
 
@@ -643,6 +711,76 @@ def verify_receipt(
         f"[green]Valid {payload['status']} deployment receipt[/green] "
         f"for {payload['site'] or 'unknown site'}"
     )
+
+
+@app.command("verify-deployment")
+def verify_deployment_command(
+    site_file: Annotated[Path, typer.Argument(exists=True, readable=True)],
+    artifact_dir: Annotated[
+        Path,
+        typer.Option("--artifact-dir", exists=True, file_okay=False, readable=True),
+    ] = ...,
+    expected_absent: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--expect-absent",
+            help="Also require this exact rule group to be absent; repeat as needed.",
+        ),
+    ] = None,
+    attempts: Annotated[int, typer.Option(min=1)] = 5,
+    delay: Annotated[float, typer.Option(min=0)] = 2.0,
+    query_attempts: Annotated[int, typer.Option("--query-attempts", min=1)] = 1,
+    query_workers: Annotated[
+        int, typer.Option("--query-workers", min=1, max=32)
+    ] = 8,
+    json_output: Annotated[bool, typer.Option("--json")] = False,
+) -> None:
+    """Verify deployed groups and PromQL queries against a reviewed artifact."""
+    try:
+        site = load_site(site_file)
+        _assert_remote_ready(site.grafana["folder_uid"])
+        bundle = load_bundle(site, artifact_dir)
+        client, preflight_report = _site_preflight(site)
+        report = verify_deployment(
+            bundle,
+            str(site.grafana["folder_uid"]),
+            _datasource_types(preflight_report),
+            client,
+            expected_absent=expected_absent or (),
+            attempts=attempts,
+            delay_seconds=delay,
+            query_attempts=query_attempts,
+            query_workers=query_workers,
+        )
+    except AlertManagerError as exc:
+        console.print(f"[red]Verification failed:[/red] {exc}")
+        raise typer.Exit(1) from exc
+
+    if json_output:
+        console.print_json(json.dumps(report.payload()))
+    else:
+        table = Table("Check", "Target", "Status", "Attempts", "Details")
+        for check in report.groups:
+            table.add_row(
+                check.group,
+                check.target_state,
+                check.status,
+                str(check.attempts),
+                check.error or "",
+            )
+        for check in report.queries:
+            table.add_row(
+                ", ".join(check.references),
+                f"Prometheus:{check.datasource_uid}",
+                check.status,
+                str(check.attempts),
+                check.error or check.result_type or "",
+            )
+        console.print(table)
+    if report.status != "succeeded":
+        console.print("[red]Post-deployment verification failed[/red]")
+        raise typer.Exit(1)
+    console.print(f"[green]Post-deployment verification passed[/green] for {site.name}")
 
 
 @app.command("rollback-plan")
@@ -714,6 +852,22 @@ def rollback(
         ),
     ] = ...,
     receipt: Annotated[Path, typer.Option("--receipt")] = ...,
+    verification_attempts: Annotated[
+        int,
+        typer.Option("--verification-attempts", min=1),
+    ] = 5,
+    verification_delay: Annotated[
+        float,
+        typer.Option("--verification-delay", min=0),
+    ] = 2.0,
+    query_attempts: Annotated[
+        int,
+        typer.Option("--query-attempts", min=1),
+    ] = 1,
+    query_workers: Annotated[
+        int,
+        typer.Option("--query-workers", min=1, max=32),
+    ] = 8,
 ) -> None:
     """Apply a reviewed Git-revert artifact using a fingerprint-bound plan."""
     recorder = ReceiptRecorder()
@@ -780,6 +934,27 @@ def rollback(
             console.print(
                 f"[green]{verb}[/green] {result.group} (HTTP {result.status_code})"
             )
+        verification = verify_deployment(
+            bundle,
+            str(site.grafana["folder_uid"]),
+            _datasource_types(preflight_report),
+            client,
+            expected_absent=(
+                action.name
+                for action in plan.actions
+                if action.target_state == "absent"
+            ),
+            attempts=verification_attempts,
+            delay_seconds=verification_delay,
+            query_attempts=query_attempts,
+            query_workers=query_workers,
+        )
+        _require_verified(recorder, verification)
+        console.print(
+            "[green]Post-rollback verification passed[/green] "
+            f"({len(verification.groups)} group(s), "
+            f"{len(verification.queries)} unique PromQL query(s))"
+        )
     except AlertManagerError as exc:
         failure = exc
 
