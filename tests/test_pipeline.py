@@ -30,3 +30,13 @@ def test_pipeline_requires_explicit_audited_rollback_inputs() -> None:
     assert "artifact: rollback-source-receipt" in pipeline
     assert '--confirm-rollback "ROLL BACK REVIEWED ARTIFACT"' in pipeline
     assert 'ROLLBACK_ENABLED: "true"' in pipeline
+
+
+def test_pipeline_post_verifies_every_mutating_path() -> None:
+    pipeline = Path("azure-pipelines.yml").read_text(encoding="utf-8")
+
+    assert pipeline.count("--verification-attempts 5") == 3
+    assert pipeline.count("--verification-delay 2") == 3
+    assert pipeline.count("--query-attempts 1") == 3
+    assert pipeline.count("--query-workers 8") == 3
+    assert pipeline.count("post-verify") == 3

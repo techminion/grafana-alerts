@@ -75,6 +75,7 @@ class ReceiptRecorder:
     pipeline: dict[str, str] = field(default_factory=pipeline_metadata)
     operations: list[dict[str, Any]] = field(default_factory=list)
     rollback: dict[str, str] | None = None
+    verification: dict[str, Any] | None = None
 
     def target(self, site: str, org_id: int, folder_uid: str) -> None:
         self.site = site
@@ -113,6 +114,9 @@ class ReceiptRecorder:
             "planSha256": rollback_plan_sha256,
         }
 
+    def record_verification(self, verification: dict[str, Any]) -> None:
+        self.verification = verification
+
     def payload(
         self,
         status: str,
@@ -137,6 +141,8 @@ class ReceiptRecorder:
         }
         if self.rollback is not None:
             payload["rollback"] = self.rollback
+        if self.verification is not None:
+            payload["verification"] = self.verification
         return payload
 
 
@@ -218,7 +224,80 @@ def validate_receipt(payload: Any) -> dict[str, Any]:
                 or not _SHA256_PATTERN.fullmatch(rollback[key])
             ):
                 raise ConfigError(f"Deployment receipt has invalid rollback {key}")
+    verification = payload.get("verification")
+    if verification is not None:
+        _validate_verification(verification)
+        if payload["status"] == "succeeded" and verification["status"] != "succeeded":
+            raise ConfigError(
+                "Successful deployment receipt cannot contain failed verification"
+            )
     return payload
+
+
+def _validate_verification(verification: Any) -> None:
+    if (
+        not isinstance(verification, dict)
+        or verification.get("status") not in {"succeeded", "failed"}
+        or not isinstance(verification.get("groups"), list)
+        or not isinstance(verification.get("queries"), list)
+    ):
+        raise ConfigError("Deployment receipt has invalid verification metadata")
+    if not verification["groups"]:
+        raise ConfigError("Deployment receipt verification must include group checks")
+    for group in verification["groups"]:
+        if (
+            not isinstance(group, dict)
+            or not isinstance(group.get("group"), str)
+            or group.get("targetState") not in {"present", "absent"}
+            or group.get("status") not in {"succeeded", "failed"}
+            or not isinstance(group.get("attempts"), int)
+            or group["attempts"] < 1
+        ):
+            raise ConfigError("Deployment receipt has an invalid group verification")
+        for key in ("desiredSha256", "liveSha256"):
+            value = group.get(key)
+            if value is not None and (
+                not isinstance(value, str) or not _SHA256_PATTERN.fullmatch(value)
+            ):
+                raise ConfigError(
+                    f"Deployment receipt has an invalid verification {key}"
+                )
+        if "error" in group and not isinstance(group["error"], str):
+            raise ConfigError("Deployment receipt has an invalid verification error")
+    for query in verification["queries"]:
+        if (
+            not isinstance(query, dict)
+            or not isinstance(query.get("datasourceUid"), str)
+            or not isinstance(query.get("expressionSha256"), str)
+            or not _SHA256_PATTERN.fullmatch(query["expressionSha256"])
+            or not isinstance(query.get("references"), list)
+            or not all(isinstance(item, str) for item in query["references"])
+            or query.get("status") not in {"succeeded", "failed"}
+            or not isinstance(query.get("attempts"), int)
+            or query["attempts"] < 1
+        ):
+            raise ConfigError("Deployment receipt has an invalid query verification")
+        if "resultType" in query and query["resultType"] not in {
+            "vector",
+            "matrix",
+            "scalar",
+            "string",
+        }:
+            raise ConfigError("Deployment receipt has an invalid query result type")
+        if "resultCount" in query and (
+            not isinstance(query["resultCount"], int) or query["resultCount"] < 0
+        ):
+            raise ConfigError("Deployment receipt has an invalid query result count")
+        if "error" in query and not isinstance(query["error"], str):
+            raise ConfigError("Deployment receipt has an invalid query verification error")
+    derived_status = (
+        "succeeded"
+        if all(item["status"] == "succeeded" for item in verification["groups"])
+        and all(item["status"] == "succeeded" for item in verification["queries"])
+        else "failed"
+    )
+    if verification["status"] != derived_status:
+        raise ConfigError("Deployment receipt verification status is inconsistent")
 
 
 def write_receipt(path: str | Path, payload: dict[str, Any]) -> str:
