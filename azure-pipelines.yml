@@ -137,6 +137,7 @@ stages:
                     grafana-alerts deploy
                     "sites/${{ parameters.site }}.yaml"
                     --artifact-dir "$(Pipeline.Workspace)/rendered-alerts"
+                    --receipt "$(Agent.TempDirectory)/deployment-receipt/deployment-receipt.json"
                   displayName: Verify and deploy reviewed artifact
                   condition: ne(variables['PRUNE_ENABLED'], 'true')
                   env:
@@ -149,9 +150,15 @@ stages:
                     --artifact-dir "$(Pipeline.Workspace)/rendered-alerts"
                     --prune-plan "$(Pipeline.Workspace)/grafana-plan/plan.json"
                     --confirm-prune "DELETE ALLOWLISTED GROUPS"
+                    --receipt "$(Agent.TempDirectory)/deployment-receipt/deployment-receipt.json"
                   displayName: Deploy artifact and prune reviewed allowlist
                   condition: eq(variables['PRUNE_ENABLED'], 'true')
                   env:
                     GRAFANA_URL: $(GRAFANA_URL)
                     GRAFANA_TOKEN: $(GRAFANA_TOKEN)
                     PRUNE_ENABLED: $(PRUNE_ENABLED)
+
+                - publish: $(Agent.TempDirectory)/deployment-receipt
+                  artifact: deployment-receipt
+                  displayName: Publish deployment receipt
+                  condition: always()

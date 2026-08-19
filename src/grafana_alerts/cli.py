@@ -28,6 +28,13 @@ from grafana_alerts.deployment_plan import (
 from grafana_alerts.exceptions import AlertManagerError
 from grafana_alerts.grafana import GrafanaClient
 from grafana_alerts.preflight import PreflightReport, run_preflight
+from grafana_alerts.receipt import (
+    ReceiptRecorder,
+    ensure_receipt_target_available,
+    load_and_verify_receipt,
+    sha256_file,
+    write_receipt,
+)
 from grafana_alerts.renderer import render_site
 from grafana_alerts.semantic import compare_group
 
@@ -522,13 +529,31 @@ def deploy(
             help='Must equal "DELETE ALLOWLISTED GROUPS" to execute a prune plan.',
         ),
     ] = None,
+    receipt: Annotated[
+        Path | None,
+        typer.Option(
+            "--receipt",
+            help="Write an exclusive deployment receipt and SHA-256 sidecar.",
+        ),
+    ] = None,
 ) -> None:
     """Verify and apply an exact rendered artifact to Grafana."""
+    recorder = ReceiptRecorder()
+    failure: AlertManagerError | None = None
     try:
+        if receipt is not None:
+            ensure_receipt_target_available(receipt)
         site = load_site(site_file)
+        recorder.target(
+            site.name, site.grafana["org_id"], str(site.grafana["folder_uid"])
+        )
         _assert_remote_ready(site.grafana["folder_uid"])
         bundle = load_bundle(site, artifact_dir)
+        recorder.artifact_manifest_sha256 = sha256_file(
+            bundle.directory / "manifest.json"
+        )
         client, preflight_report = _site_preflight(site)
+        recorder.identity = preflight_report.identity
         deployment_plan = None
         if prune_plan is not None or confirm_prune is not None:
             if prune_plan is None:
@@ -537,6 +562,7 @@ def deploy(
                 raise AlertManagerError(
                     '--confirm-prune must equal "DELETE ALLOWLISTED GROUPS"'
                 )
+            recorder.deployment_plan_sha256 = sha256_file(prune_plan)
             deployment_plan = load_plan(site, bundle, prune_plan)
             if deployment_plan.prune and os.getenv("PRUNE_ENABLED", "") != "true":
                 raise AlertManagerError(
@@ -549,17 +575,66 @@ def deploy(
             f"[bold]{preflight_report.org_id}[/bold]"
         )
         for group in bundle.groups:
-            result = client.apply_group(site.grafana["folder_uid"], group.name, group.payload)
+            try:
+                result = client.apply_group(
+                    site.grafana["folder_uid"], group.name, group.payload
+                )
+            except AlertManagerError as exc:
+                recorder.record(group.name, "apply", "failed", error=str(exc))
+                raise
+            recorder.record(
+                result.group, "apply", "succeeded", http_status=result.status_code
+            )
             console.print(f"[green]Applied[/green] {result.group} (HTTP {result.status_code})")
         if deployment_plan is not None:
             for candidate in deployment_plan.prune:
-                result = client.delete_group(
-                    site.grafana["folder_uid"], candidate.name
+                try:
+                    result = client.delete_group(
+                        site.grafana["folder_uid"], candidate.name
+                    )
+                except AlertManagerError as exc:
+                    recorder.record(candidate.name, "delete", "failed", error=str(exc))
+                    raise
+                recorder.record(
+                    result.group, "delete", "succeeded", http_status=result.status_code
                 )
                 console.print(
                     f"[red]Deleted allowlisted group[/red] {result.group} "
                     f"(HTTP {result.status_code})"
                 )
     except AlertManagerError as exc:
-        console.print(f"[red]Deploy failed:[/red] {exc}")
+        failure = exc
+
+    if receipt is not None:
+        try:
+            status = "failed" if failure else "succeeded"
+            write_receipt(
+                receipt,
+                recorder.payload(status, str(failure) if failure else None),
+            )
+            console.print(f"[green]Deployment receipt[/green] {receipt}")
+        except AlertManagerError as exc:
+            if failure is None:
+                failure = exc
+            else:
+                console.print(f"[red]Receipt failed:[/red] {exc}")
+
+    if failure is not None:
+        console.print(f"[red]Deploy failed:[/red] {failure}")
+        raise typer.Exit(1) from failure
+
+
+@app.command("verify-receipt")
+def verify_receipt(
+    receipt_file: Annotated[Path, typer.Argument(exists=True, readable=True)],
+) -> None:
+    """Validate a deployment receipt and its SHA-256 sidecar."""
+    try:
+        payload = load_and_verify_receipt(receipt_file)
+    except AlertManagerError as exc:
+        console.print(f"[red]Receipt verification failed:[/red] {exc}")
         raise typer.Exit(1) from exc
+    console.print(
+        f"[green]Valid {payload['status']} deployment receipt[/green] "
+        f"for {payload['site'] or 'unknown site'}"
+    )
