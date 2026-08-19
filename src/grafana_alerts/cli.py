@@ -36,6 +36,11 @@ from grafana_alerts.receipt import (
     write_receipt,
 )
 from grafana_alerts.renderer import render_site
+from grafana_alerts.rollback import (
+    load_rollback_plan,
+    verify_live_rollback_plan,
+    write_rollback_plan,
+)
 from grafana_alerts.semantic import compare_group
 
 app = typer.Typer(no_args_is_help=True, help="Render, validate, and deploy Grafana alerts.")
@@ -638,3 +643,159 @@ def verify_receipt(
         f"[green]Valid {payload['status']} deployment receipt[/green] "
         f"for {payload['site'] or 'unknown site'}"
     )
+
+
+@app.command("rollback-plan")
+def rollback_plan(
+    site_file: Annotated[Path, typer.Argument(exists=True, readable=True)],
+    artifact_dir: Annotated[
+        Path,
+        typer.Option("--artifact-dir", exists=True, file_okay=False, readable=True),
+    ] = ...,
+    source_receipt: Annotated[
+        Path,
+        typer.Option(
+            "--source-receipt", exists=True, dir_okay=False, readable=True
+        ),
+    ] = ...,
+    reason: Annotated[str, typer.Option("--reason")] = ...,
+    output_dir: Annotated[Path, typer.Option("--output", "-o")] = Path(
+        "rollback-plan"
+    ),
+) -> None:
+    """Plan a Git-revert rollback against exact live Grafana fingerprints."""
+    try:
+        site = load_site(site_file)
+        _assert_remote_ready(site.grafana["folder_uid"])
+        bundle = load_bundle(site, artifact_dir)
+        client, preflight_report = _site_preflight(site)
+        path = write_rollback_plan(
+            site, bundle, source_receipt, reason, client, output_dir
+        )
+        plan = load_rollback_plan(site, bundle, source_receipt, path)
+    except AlertManagerError as exc:
+        console.print(f"[red]Rollback plan failed:[/red] {exc}")
+        raise typer.Exit(1) from exc
+
+    table = Table("Group", "Target", "Action")
+    for action in plan.actions:
+        table.add_row(action.name, action.target_state, action.action)
+    console.print(
+        "Authenticated as "
+        f"[bold]{preflight_report.identity}[/bold] in organization "
+        f"[bold]{preflight_report.org_id}[/bold]"
+    )
+    console.print(table)
+    console.print(f"[green]Rollback plan[/green] {path}")
+
+
+@app.command()
+def rollback(
+    site_file: Annotated[Path, typer.Argument(exists=True, readable=True)],
+    artifact_dir: Annotated[
+        Path,
+        typer.Option("--artifact-dir", exists=True, file_okay=False, readable=True),
+    ] = ...,
+    source_receipt: Annotated[
+        Path,
+        typer.Option(
+            "--source-receipt", exists=True, dir_okay=False, readable=True
+        ),
+    ] = ...,
+    plan_file: Annotated[
+        Path,
+        typer.Option("--plan", exists=True, dir_okay=False, readable=True),
+    ] = ...,
+    confirm_rollback: Annotated[
+        str,
+        typer.Option(
+            "--confirm-rollback",
+            help='Must equal "ROLL BACK REVIEWED ARTIFACT".',
+        ),
+    ] = ...,
+    receipt: Annotated[Path, typer.Option("--receipt")] = ...,
+) -> None:
+    """Apply a reviewed Git-revert artifact using a fingerprint-bound plan."""
+    recorder = ReceiptRecorder()
+    failure: AlertManagerError | None = None
+    try:
+        ensure_receipt_target_available(receipt)
+        site = load_site(site_file)
+        recorder.target(
+            site.name, site.grafana["org_id"], str(site.grafana["folder_uid"])
+        )
+        _assert_remote_ready(site.grafana["folder_uid"])
+        bundle = load_bundle(site, artifact_dir)
+        recorder.artifact_manifest_sha256 = sha256_file(
+            bundle.directory / "manifest.json"
+        )
+        client, preflight_report = _site_preflight(site)
+        recorder.identity = preflight_report.identity
+        plan = load_rollback_plan(site, bundle, source_receipt, plan_file)
+        recorder.link_rollback(
+            plan.reason,
+            plan.source_receipt_sha256,
+            sha256_file(plan_file),
+        )
+        if confirm_rollback != "ROLL BACK REVIEWED ARTIFACT":
+            raise AlertManagerError(
+                '--confirm-rollback must equal "ROLL BACK REVIEWED ARTIFACT"'
+            )
+        if os.getenv("ROLLBACK_ENABLED", "") != "true":
+            raise AlertManagerError("ROLLBACK_ENABLED must equal true before rollback")
+        verify_live_rollback_plan(site, plan, client)
+        artifacts = {group.name: group for group in bundle.groups}
+
+        console.print(
+            "Authenticated as "
+            f"[bold]{preflight_report.identity}[/bold] in organization "
+            f"[bold]{preflight_report.org_id}[/bold]"
+        )
+        for action in plan.actions:
+            if action.action == "no-change":
+                console.print(f"[dim]No change[/dim] {action.name}")
+                continue
+            try:
+                if action.action == "apply":
+                    artifact = artifacts[action.name]
+                    result = client.apply_group(
+                        site.grafana["folder_uid"],
+                        action.name,
+                        artifact.payload,
+                    )
+                else:
+                    result = client.delete_group(
+                        site.grafana["folder_uid"], action.name
+                    )
+            except AlertManagerError as exc:
+                recorder.record(action.name, action.action, "failed", error=str(exc))
+                raise
+            recorder.record(
+                result.group,
+                action.action,
+                "succeeded",
+                http_status=result.status_code,
+            )
+            verb = "Restored" if action.action == "apply" else "Removed"
+            console.print(
+                f"[green]{verb}[/green] {result.group} (HTTP {result.status_code})"
+            )
+    except AlertManagerError as exc:
+        failure = exc
+
+    try:
+        status = "failed" if failure else "succeeded"
+        write_receipt(
+            receipt,
+            recorder.payload(status, str(failure) if failure else None),
+        )
+        console.print(f"[green]Rollback receipt[/green] {receipt}")
+    except AlertManagerError as exc:
+        if failure is None:
+            failure = exc
+        else:
+            console.print(f"[red]Receipt failed:[/red] {exc}")
+
+    if failure is not None:
+        console.print(f"[red]Rollback failed:[/red] {failure}")
+        raise typer.Exit(1) from failure

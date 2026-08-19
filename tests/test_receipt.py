@@ -93,3 +93,18 @@ def test_verify_receipt_command_reports_valid_receipt(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.output
     assert "Valid succeeded deployment receipt" in result.output
+
+
+def test_receipt_validates_linked_rollback_metadata(tmp_path: Path) -> None:
+    path = tmp_path / "rollback-receipt.json"
+    recorder = _recorder()
+    recorder.link_rollback("Revert regression", "c" * 64, "d" * 64)
+
+    write_receipt(path, recorder.payload("succeeded"))
+    payload = load_and_verify_receipt(path)
+
+    assert payload["rollback"] == {
+        "reason": "Revert regression",
+        "sourceReceiptSha256": "c" * 64,
+        "planSha256": "d" * 64,
+    }
