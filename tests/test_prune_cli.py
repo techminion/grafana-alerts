@@ -59,12 +59,16 @@ class FakeGrafanaClient:
             raise GrafanaApiError("Grafana rejected the rule group")
         self.applied.append(group)
         self.groups[group] = payload
-        return SimpleNamespace(group=group, status_code=202)
+        return SimpleNamespace(
+            group=group, status_code=202, audit_id="audit-apply", audit_sha256="a" * 64
+        )
 
     def delete_group(self, folder_uid: str, group: str) -> SimpleNamespace:
         self.deleted.append(group)
         self.groups.pop(group, None)
-        return SimpleNamespace(group=group, status_code=204)
+        return SimpleNamespace(
+            group=group, status_code=204, audit_id="audit-delete", audit_sha256="b" * 64
+        )
 
     def query_prometheus(
         self, datasource_uid: str, expression: str, *, time: str | None = None
@@ -98,6 +102,7 @@ def test_deploy_refuses_prune_when_environment_gate_is_off(
     fake = FakeGrafanaClient(current)
     receipt = tmp_path / "failure-receipt.json"
     monkeypatch.setattr(cli, "GrafanaClient", lambda url, token: fake)
+    monkeypatch.setattr(cli, "_proxy_write_client", lambda *args: fake)
 
     result = runner.invoke(
         cli.app,
@@ -133,6 +138,7 @@ def test_deploy_applies_artifact_then_deletes_exact_reviewed_group(
     fake = FakeGrafanaClient(current)
     receipt = tmp_path / "success-receipt.json"
     monkeypatch.setattr(cli, "GrafanaClient", lambda url, token: fake)
+    monkeypatch.setattr(cli, "_proxy_write_client", lambda *args: fake)
 
     result = runner.invoke(
         cli.app,
@@ -177,6 +183,7 @@ def test_deploy_records_partial_failure_without_exposing_token(
     site_path, bundle, _, current = _prune_inputs(tmp_path)
     fake = FakeGrafanaClient(current, fail_apply=True)
     monkeypatch.setattr(cli, "GrafanaClient", lambda url, token: fake)
+    monkeypatch.setattr(cli, "_proxy_write_client", lambda *args: fake)
     receipt = tmp_path / "apply-failure-receipt.json"
 
     result = runner.invoke(
@@ -206,12 +213,40 @@ def test_deploy_records_partial_failure_without_exposing_token(
     assert "secret" not in json.dumps(payload)
 
 
+def test_deploy_refuses_direct_writes_when_proxy_is_not_configured(
+    tmp_path: Path, monkeypatch
+) -> None:
+    site_path, bundle, _, current = _prune_inputs(tmp_path)
+    fake = FakeGrafanaClient(current)
+    monkeypatch.setattr(cli, "GrafanaClient", lambda url, token: fake)
+    receipt = tmp_path / "missing-proxy-receipt.json"
+
+    result = runner.invoke(
+        cli.app,
+        [
+            "deploy",
+            str(site_path),
+            "--artifact-dir",
+            str(bundle.directory),
+            "--receipt",
+            str(receipt),
+        ],
+        env={"GRAFANA_URL": "https://grafana.example", "GRAFANA_TOKEN": "secret"},
+    )
+
+    assert result.exit_code == 1
+    assert "ALERT_PROXY_URL must be set" in result.output
+    assert fake.applied == []
+    assert load_and_verify_receipt(receipt)["operations"] == []
+
+
 def test_deploy_fails_and_records_post_deployment_query_verification(
     tmp_path: Path, monkeypatch
 ) -> None:
     site_path, bundle, _, current = _prune_inputs(tmp_path)
     fake = FakeGrafanaClient(current, fail_query=True)
     monkeypatch.setattr(cli, "GrafanaClient", lambda url, token: fake)
+    monkeypatch.setattr(cli, "_proxy_write_client", lambda *args: fake)
     receipt = tmp_path / "verification-failure-receipt.json"
 
     result = runner.invoke(

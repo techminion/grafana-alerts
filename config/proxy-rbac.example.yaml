@@ -1,0 +1,17 @@
+schemaVersion: 1
+identities:
+  - match:
+      login: alert-editor
+    role: Editor
+    sites:
+      - example
+  - match:
+      login: deployment-admin
+    role: Admin
+    sites:
+      - example
+  - match:
+      login: audit-viewer
+    role: Viewer
+    sites:
+      - example
