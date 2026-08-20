@@ -25,6 +25,7 @@ from grafana_alerts.deployment_plan import (
     verify_live_prune_candidates,
     write_plan,
 )
+from grafana_alerts.drift import detect_drift, write_drift_report
 from grafana_alerts.exceptions import AlertManagerError
 from grafana_alerts.grafana import GrafanaClient
 from grafana_alerts.preflight import PreflightReport, run_preflight
@@ -568,6 +569,57 @@ def plan(
         raise typer.Exit(1) from exc
     console.print(table)
     console.print(f"[green]Plan[/green] {plan_path}")
+
+
+@app.command()
+def drift(
+    site_file: Annotated[Path, typer.Argument(exists=True, readable=True)],
+    artifact_dir: Annotated[
+        Path,
+        typer.Option("--artifact-dir", exists=True, file_okay=False, readable=True),
+    ] = ...,
+    output_dir: Annotated[Path, typer.Option("--output", "-o")] = Path(
+        "drift-report"
+    ),
+    fail_on_drift: Annotated[
+        bool,
+        typer.Option(
+            "--fail-on-drift/--no-fail-on-drift",
+            help="Exit non-zero when managed Grafana state differs from Git.",
+        ),
+    ] = True,
+) -> None:
+    """Detect out-of-band changes to explicitly managed Grafana rule groups."""
+    try:
+        site = load_site(site_file)
+        _assert_remote_ready(site.grafana["folder_uid"])
+        bundle = load_bundle(site, artifact_dir)
+        client, preflight_report = _site_preflight(site)
+        report = detect_drift(site, bundle, preflight_report.identity, client)
+        report_path = write_drift_report(report, output_dir)
+    except AlertManagerError as exc:
+        console.print(f"[red]Drift detection failed:[/red] {exc}")
+        raise typer.Exit(1) from exc
+
+    table = Table("Group", "Target", "Status", "Desired SHA", "Live SHA")
+    for check in report.checks:
+        table.add_row(
+            check.group,
+            check.target_state,
+            check.status,
+            (check.desired_sha256 or "")[:12],
+            (check.live_sha256 or "")[:12],
+        )
+    console.print(table)
+    console.print(f"[green]Drift report[/green] {report_path}")
+    if report.status == "error":
+        console.print("[red]Drift detection had read errors[/red]")
+        raise typer.Exit(1)
+    if report.status == "drift" and fail_on_drift:
+        console.print("[red]Managed Grafana drift detected[/red]")
+        raise typer.Exit(2)
+    if report.status == "clean":
+        console.print(f"[green]No managed drift detected[/green] for {site.name}")
 
 
 @app.command()
