@@ -14,12 +14,16 @@ from grafana_alerts.exceptions import GrafanaApiError
 class ApplyResult:
     group: str
     status_code: int
+    audit_id: str | None = None
+    audit_sha256: str | None = None
 
 
 @dataclass(frozen=True)
 class DeleteResult:
     group: str
     status_code: int
+    audit_id: str | None = None
+    audit_sha256: str | None = None
 
 
 class GrafanaClient:

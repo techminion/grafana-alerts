@@ -61,12 +61,16 @@ class FakeGrafanaClient:
     ) -> SimpleNamespace:
         self.applied.append(group)
         self.groups[group] = payload
-        return SimpleNamespace(group=group, status_code=202)
+        return SimpleNamespace(
+            group=group, status_code=202, audit_id="audit-apply", audit_sha256="a" * 64
+        )
 
     def delete_group(self, folder_uid: str, group: str) -> SimpleNamespace:
         self.deleted.append(group)
         self.groups.pop(group, None)
-        return SimpleNamespace(group=group, status_code=204)
+        return SimpleNamespace(
+            group=group, status_code=204, audit_id="audit-delete", audit_sha256="b" * 64
+        )
 
     def query_prometheus(
         self, datasource_uid: str, expression: str, *, time: str | None = None
@@ -151,6 +155,7 @@ def test_rollback_requires_environment_gate_and_writes_failure_receipt(
     site_path, site, bundle, source_receipt = _rollback_inputs(tmp_path)
     fake = FakeGrafanaClient()
     monkeypatch.setattr(cli, "GrafanaClient", lambda url, token: fake)
+    monkeypatch.setattr(cli, "_proxy_write_client", lambda *args: fake)
     plan = write_rollback_plan(
         site, bundle, source_receipt, "Revert regression", fake, tmp_path / "plan"
     )
@@ -190,6 +195,7 @@ def test_rollback_restores_target_and_removes_introduced_group(
     site_path, site, bundle, source_receipt = _rollback_inputs(tmp_path)
     fake = FakeGrafanaClient()
     monkeypatch.setattr(cli, "GrafanaClient", lambda url, token: fake)
+    monkeypatch.setattr(cli, "_proxy_write_client", lambda *args: fake)
     plan = write_rollback_plan(
         site, bundle, source_receipt, "Revert regression", fake, tmp_path / "plan"
     )

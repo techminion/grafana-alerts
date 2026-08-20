@@ -26,7 +26,14 @@ def _recorder() -> ReceiptRecorder:
     recorder.identity = "alert-deployer"
     recorder.artifact_manifest_sha256 = "a" * 64
     recorder.deployment_plan_sha256 = "b" * 64
-    recorder.record("host-health", "apply", "succeeded", http_status=202)
+    recorder.record(
+        "host-health",
+        "apply",
+        "succeeded",
+        http_status=202,
+        audit_id="request-1",
+        audit_sha256="c" * 64,
+    )
     return recorder
 
 
@@ -42,6 +49,8 @@ def test_receipt_round_trip_preserves_audit_fields(tmp_path: Path) -> None:
     assert verified == payload
     assert verified["identity"] == "alert-deployer"
     assert verified["operations"][0]["httpStatus"] == 202
+    assert verified["operations"][0]["auditId"] == "request-1"
+    assert verified["operations"][0]["auditSha256"] == "c" * 64
     assert receipt_sidecar(path).read_text(encoding="utf-8").startswith(digest)
 
 

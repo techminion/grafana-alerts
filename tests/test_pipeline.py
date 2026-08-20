@@ -40,3 +40,9 @@ def test_pipeline_post_verifies_every_mutating_path() -> None:
     assert pipeline.count("--query-attempts 1") == 3
     assert pipeline.count("--query-workers 8") == 3
     assert pipeline.count("post-verify") == 3
+
+
+def test_pipeline_routes_every_mutation_through_proxy() -> None:
+    pipeline = Path("azure-pipelines.yml").read_text(encoding="utf-8")
+
+    assert pipeline.count("ALERT_PROXY_URL: $(ALERT_PROXY_URL)") == 3

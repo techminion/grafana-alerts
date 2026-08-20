@@ -28,10 +28,12 @@ from grafana_alerts.deployment_plan import (
 from grafana_alerts.exceptions import AlertManagerError
 from grafana_alerts.grafana import GrafanaClient
 from grafana_alerts.preflight import PreflightReport, run_preflight
+from grafana_alerts.proxy_client import ProxyWriteClient
 from grafana_alerts.receipt import (
     ReceiptRecorder,
     ensure_receipt_target_available,
     load_and_verify_receipt,
+    pipeline_metadata,
     sha256_file,
     write_receipt,
 )
@@ -111,6 +113,22 @@ def _site_preflight(site) -> tuple[GrafanaClient, PreflightReport]:
     url, token = _credentials()
     client = GrafanaClient(url, token)
     return client, run_preflight(site, client)
+
+
+def _proxy_write_client(site_file: Path, site, artifact_sha256: str) -> ProxyWriteClient:
+    proxy_url = os.getenv("ALERT_PROXY_URL", "")
+    if not proxy_url:
+        raise AlertManagerError("ALERT_PROXY_URL must be set for alert mutations")
+    _, token = _credentials()
+    return ProxyWriteClient(
+        proxy_url,
+        token,
+        site_file.stem,
+        int(site.grafana["org_id"]),
+        str(site.grafana["folder_uid"]),
+        artifact_sha256,
+        pipeline=pipeline_metadata(),
+    )
 
 
 def _datasource_types(report: PreflightReport) -> dict[str, str]:
@@ -625,29 +643,56 @@ def deploy(
             f"[bold]{preflight_report.identity}[/bold] in organization "
             f"[bold]{preflight_report.org_id}[/bold]"
         )
+        write_client = _proxy_write_client(
+            site_file, site, recorder.artifact_manifest_sha256
+        )
         for group in bundle.groups:
             try:
-                result = client.apply_group(
+                result = write_client.apply_group(
                     site.grafana["folder_uid"], group.name, group.payload
                 )
             except AlertManagerError as exc:
-                recorder.record(group.name, "apply", "failed", error=str(exc))
+                recorder.record(
+                    group.name,
+                    "apply",
+                    "failed",
+                    error=str(exc),
+                    audit_id=getattr(exc, "audit_id", None),
+                    audit_sha256=getattr(exc, "audit_sha256", None),
+                )
                 raise
             recorder.record(
-                result.group, "apply", "succeeded", http_status=result.status_code
+                result.group,
+                "apply",
+                "succeeded",
+                http_status=result.status_code,
+                audit_id=result.audit_id,
+                audit_sha256=result.audit_sha256,
             )
             console.print(f"[green]Applied[/green] {result.group} (HTTP {result.status_code})")
         if deployment_plan is not None:
             for candidate in deployment_plan.prune:
                 try:
-                    result = client.delete_group(
+                    result = write_client.delete_group(
                         site.grafana["folder_uid"], candidate.name
                     )
                 except AlertManagerError as exc:
-                    recorder.record(candidate.name, "delete", "failed", error=str(exc))
+                    recorder.record(
+                        candidate.name,
+                        "delete",
+                        "failed",
+                        error=str(exc),
+                        audit_id=getattr(exc, "audit_id", None),
+                        audit_sha256=getattr(exc, "audit_sha256", None),
+                    )
                     raise
                 recorder.record(
-                    result.group, "delete", "succeeded", http_status=result.status_code
+                    result.group,
+                    "delete",
+                    "succeeded",
+                    http_status=result.status_code,
+                    audit_id=result.audit_id,
+                    audit_sha256=result.audit_sha256,
                 )
                 console.print(
                     f"[red]Deleted allowlisted group[/red] {result.group} "
@@ -905,6 +950,9 @@ def rollback(
             f"[bold]{preflight_report.identity}[/bold] in organization "
             f"[bold]{preflight_report.org_id}[/bold]"
         )
+        write_client = _proxy_write_client(
+            site_file, site, recorder.artifact_manifest_sha256
+        )
         for action in plan.actions:
             if action.action == "no-change":
                 console.print(f"[dim]No change[/dim] {action.name}")
@@ -912,23 +960,32 @@ def rollback(
             try:
                 if action.action == "apply":
                     artifact = artifacts[action.name]
-                    result = client.apply_group(
+                    result = write_client.apply_group(
                         site.grafana["folder_uid"],
                         action.name,
                         artifact.payload,
                     )
                 else:
-                    result = client.delete_group(
+                    result = write_client.delete_group(
                         site.grafana["folder_uid"], action.name
                     )
             except AlertManagerError as exc:
-                recorder.record(action.name, action.action, "failed", error=str(exc))
+                recorder.record(
+                    action.name,
+                    action.action,
+                    "failed",
+                    error=str(exc),
+                    audit_id=getattr(exc, "audit_id", None),
+                    audit_sha256=getattr(exc, "audit_sha256", None),
+                )
                 raise
             recorder.record(
                 result.group,
                 action.action,
                 "succeeded",
                 http_status=result.status_code,
+                audit_id=result.audit_id,
+                audit_sha256=result.audit_sha256,
             )
             verb = "Restored" if action.action == "apply" else "Removed"
             console.print(

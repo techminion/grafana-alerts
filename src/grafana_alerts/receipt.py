@@ -90,6 +90,8 @@ class ReceiptRecorder:
         *,
         http_status: int | None = None,
         error: str | None = None,
+        audit_id: str | None = None,
+        audit_sha256: str | None = None,
     ) -> None:
         operation: dict[str, Any] = {
             "group": group,
@@ -100,6 +102,10 @@ class ReceiptRecorder:
             operation["httpStatus"] = http_status
         if error is not None:
             operation["error"] = error
+        if audit_id is not None:
+            operation["auditId"] = audit_id
+        if audit_sha256 is not None:
+            operation["auditSha256"] = audit_sha256
         self.operations.append(operation)
 
     def link_rollback(
@@ -206,6 +212,15 @@ def validate_receipt(payload: Any) -> dict[str, Any]:
             raise ConfigError("Deployment receipt operation has an invalid HTTP status")
         if "error" in operation and not isinstance(operation["error"], str):
             raise ConfigError("Deployment receipt operation has an invalid error")
+        if "auditId" in operation and (
+            not isinstance(operation["auditId"], str) or not operation["auditId"]
+        ):
+            raise ConfigError("Deployment receipt operation has an invalid audit ID")
+        if "auditSha256" in operation and (
+            not isinstance(operation["auditSha256"], str)
+            or not _SHA256_PATTERN.fullmatch(operation["auditSha256"])
+        ):
+            raise ConfigError("Deployment receipt operation has an invalid audit fingerprint")
     if payload["status"] == "failed" and not payload["error"]:
         raise ConfigError("Failed deployment receipt must include an error")
     rollback = payload.get("rollback")
