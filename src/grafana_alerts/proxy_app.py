@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,9 +13,13 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field
 
+from grafana_alerts.attestation import (
+    mutation_attestation_sha256,
+    verify_mutation_attestation,
+)
 from grafana_alerts.config import SiteConfig, load_site
 from grafana_alerts.deployment_plan import live_group_sha256
-from grafana_alerts.exceptions import AlertManagerError, ConfigError
+from grafana_alerts.exceptions import AlertManagerError, AuditConflictError, ConfigError
 from grafana_alerts.grafana import GrafanaClient
 from grafana_alerts.proxy_audit import AuditRecord, write_audit_record
 from grafana_alerts.receipt import utc_timestamp
@@ -36,6 +39,8 @@ class ProxySettings:
     sites_dir: Path
     rbac_file: Path
     audit_dir: Path
+    attestation_key: str
+    attestation_max_ttl_seconds: int = 900
 
 
 @dataclass(frozen=True)
@@ -51,6 +56,7 @@ class MutationContext(BaseModel):
     folder_uid: str = Field(alias="folderUid", min_length=1)
     artifact_manifest_sha256: str = Field(alias="artifactManifestSha256")
     pipeline: dict[str, str] = Field(default_factory=dict)
+    attestation: dict[str, Any]
 
 
 class ApplyRequest(MutationContext):
@@ -75,15 +81,28 @@ def _settings_from_env() -> ProxySettings:
         "PROXY_GRAFANA_URL": os.getenv("PROXY_GRAFANA_URL", ""),
         "PROXY_RBAC_FILE": os.getenv("PROXY_RBAC_FILE", ""),
         "PROXY_AUDIT_DIR": os.getenv("PROXY_AUDIT_DIR", ""),
+        "PROXY_ATTESTATION_KEY": os.getenv("PROXY_ATTESTATION_KEY", ""),
     }
     missing = [key for key, value in required.items() if not value.strip()]
     if missing:
         raise ConfigError(f"Proxy configuration is missing: {', '.join(missing)}")
+    try:
+        max_ttl_seconds = int(
+            os.getenv("PROXY_ATTESTATION_MAX_TTL_SECONDS", "900")
+        )
+    except ValueError as exc:
+        raise ConfigError("PROXY_ATTESTATION_MAX_TTL_SECONDS must be an integer") from exc
+    if max_ttl_seconds < 1:
+        raise ConfigError("PROXY_ATTESTATION_MAX_TTL_SECONDS must be positive")
+    if len(required["PROXY_ATTESTATION_KEY"].encode()) < 32:
+        raise ConfigError("PROXY_ATTESTATION_KEY must be at least 32 bytes")
     return ProxySettings(
         grafana_url=required["PROXY_GRAFANA_URL"],
         sites_dir=Path(os.getenv("PROXY_SITES_DIR", "sites")),
         rbac_file=Path(required["PROXY_RBAC_FILE"]),
         audit_dir=Path(required["PROXY_AUDIT_DIR"]),
+        attestation_key=required["PROXY_ATTESTATION_KEY"],
+        attestation_max_ttl_seconds=max_ttl_seconds,
     )
 
 
@@ -189,6 +208,39 @@ def _validate_payload(site: SiteConfig, group: str, payload: dict[str, Any]) -> 
             raise HTTPException(status_code=409, detail="Payload rule target does not match site")
 
 
+def _verify_attestation(
+    settings: ProxySettings,
+    request: MutationContext,
+    site_key: str,
+    group: str,
+    operation: str,
+    *,
+    payload_sha256: str | None,
+    expected_before_sha256: str | None,
+) -> dict[str, Any]:
+    expected = {
+        "site": site_key,
+        "orgId": request.org_id,
+        "folderUid": request.folder_uid,
+        "group": group,
+        "operation": operation,
+        "artifactManifestSha256": request.artifact_manifest_sha256,
+        "payloadSha256": payload_sha256,
+        "expectedBeforeSha256": expected_before_sha256,
+    }
+    try:
+        return verify_mutation_attestation(
+            request.attestation,
+            settings.attestation_key,
+            expected=expected,
+            max_ttl_seconds=settings.attestation_max_ttl_seconds,
+        )
+    except ConfigError as exc:
+        raise HTTPException(
+            status_code=403, detail=f"Mutation attestation rejected: {exc}"
+        ) from exc
+
+
 def _audit_payload(
     request_id: str,
     phase: str,
@@ -217,6 +269,7 @@ def _audit_payload(
         "group": group,
         "action": action,
         "artifactManifestSha256": request.artifact_manifest_sha256,
+        "attestationSha256": mutation_attestation_sha256(request.attestation),
         "before": before,
         "beforeSha256": live_group_sha256(before) if before is not None else None,
         "after": after,
@@ -288,13 +341,23 @@ def create_app(
         site = _load_target(proxy_settings, site_key)
         _validate_context(site, request)
         _validate_payload(site, group, request.payload)
+        desired_sha256 = live_group_sha256(request.payload)
+        attestation = _verify_attestation(
+            proxy_settings,
+            request,
+            site_key,
+            group,
+            "apply",
+            payload_sha256=desired_sha256,
+            expected_before_sha256=None,
+        )
         auth, client = _authorize(
             proxy_settings, token(credentials), site_key, request.org_id, client_factory
         )
         before = client.get_group(request.folder_uid, group)
         action = "create" if before is None else "update"
         _require_action(auth.role, action)
-        request_id = uuid.uuid4().hex
+        request_id = attestation["nonce"]
         intent = _audit_payload(
             request_id,
             "intent",
@@ -309,6 +372,8 @@ def create_app(
         )
         try:
             audit_writer(proxy_settings.audit_dir, request_id, "intent", intent)
+        except AuditConflictError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
         except ConfigError as exc:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
         try:
@@ -376,8 +441,18 @@ def create_app(
         before = client.get_group(request.folder_uid, group)
         if before is None:
             raise HTTPException(status_code=404, detail="Rule group does not exist")
+        before_sha256 = live_group_sha256(before)
+        attestation = _verify_attestation(
+            proxy_settings,
+            request,
+            site_key,
+            group,
+            "delete",
+            payload_sha256=None,
+            expected_before_sha256=before_sha256,
+        )
         _require_action(auth.role, "delete")
-        request_id = uuid.uuid4().hex
+        request_id = attestation["nonce"]
         intent = _audit_payload(
             request_id,
             "intent",
@@ -392,6 +467,8 @@ def create_app(
         )
         try:
             audit_writer(proxy_settings.audit_dir, request_id, "intent", intent)
+        except AuditConflictError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
         except ConfigError as exc:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
         try:

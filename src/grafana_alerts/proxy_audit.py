@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from grafana_alerts.exceptions import ConfigError
+from grafana_alerts.exceptions import AuditConflictError, ConfigError
 
 
 @dataclass(frozen=True)
@@ -41,7 +41,9 @@ def write_audit_record(
         with sidecar_path.open("x", encoding="utf-8") as stream:
             stream.write(f"{fingerprint}  {record_path.name}\n")
     except FileExistsError as exc:
-        raise ConfigError(f"Proxy audit record already exists: {exc.filename}") from exc
+        raise AuditConflictError(
+            f"Proxy audit record already exists: {exc.filename}"
+        ) from exc
     except OSError as exc:
         raise ConfigError(f"Unable to write proxy audit record: {exc}") from exc
     return AuditRecord(audit_id=audit_id, sha256=fingerprint, path=record_path)

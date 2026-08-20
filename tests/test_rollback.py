@@ -65,7 +65,10 @@ class FakeGrafanaClient:
             group=group, status_code=202, audit_id="audit-apply", audit_sha256="a" * 64
         )
 
-    def delete_group(self, folder_uid: str, group: str) -> SimpleNamespace:
+    def delete_group(
+        self, folder_uid: str, group: str, expected_before_sha256: str
+    ) -> SimpleNamespace:
+        assert expected_before_sha256
         self.deleted.append(group)
         self.groups.pop(group, None)
         return SimpleNamespace(

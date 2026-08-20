@@ -119,6 +119,11 @@ def _proxy_write_client(site_file: Path, site, artifact_sha256: str) -> ProxyWri
     proxy_url = os.getenv("ALERT_PROXY_URL", "")
     if not proxy_url:
         raise AlertManagerError("ALERT_PROXY_URL must be set for alert mutations")
+    attestation_key = os.getenv("ALERT_ATTESTATION_KEY", "")
+    if len(attestation_key.encode()) < 32:
+        raise AlertManagerError(
+            "ALERT_ATTESTATION_KEY must be set to at least 32 bytes for alert mutations"
+        )
     _, token = _credentials()
     return ProxyWriteClient(
         proxy_url,
@@ -127,6 +132,7 @@ def _proxy_write_client(site_file: Path, site, artifact_sha256: str) -> ProxyWri
         int(site.grafana["org_id"]),
         str(site.grafana["folder_uid"]),
         artifact_sha256,
+        attestation_key,
         pipeline=pipeline_metadata(),
     )
 
@@ -674,7 +680,9 @@ def deploy(
             for candidate in deployment_plan.prune:
                 try:
                     result = write_client.delete_group(
-                        site.grafana["folder_uid"], candidate.name
+                        site.grafana["folder_uid"],
+                        candidate.name,
+                        candidate.live_sha256,
                     )
                 except AlertManagerError as exc:
                     recorder.record(
@@ -966,8 +974,14 @@ def rollback(
                         artifact.payload,
                     )
                 else:
+                    if action.live_sha256 is None:
+                        raise AlertManagerError(
+                            f"Rollback delete has no reviewed fingerprint: {action.name}"
+                        )
                     result = write_client.delete_group(
-                        site.grafana["folder_uid"], action.name
+                        site.grafana["folder_uid"],
+                        action.name,
+                        action.live_sha256,
                     )
             except AlertManagerError as exc:
                 recorder.record(

@@ -63,7 +63,10 @@ class FakeGrafanaClient:
             group=group, status_code=202, audit_id="audit-apply", audit_sha256="a" * 64
         )
 
-    def delete_group(self, folder_uid: str, group: str) -> SimpleNamespace:
+    def delete_group(
+        self, folder_uid: str, group: str, expected_before_sha256: str
+    ) -> SimpleNamespace:
+        assert expected_before_sha256
         self.deleted.append(group)
         self.groups.pop(group, None)
         return SimpleNamespace(
@@ -238,6 +241,28 @@ def test_deploy_refuses_direct_writes_when_proxy_is_not_configured(
     assert "ALERT_PROXY_URL must be set" in result.output
     assert fake.applied == []
     assert load_and_verify_receipt(receipt)["operations"] == []
+
+
+def test_deploy_requires_pipeline_attestation_key(
+    tmp_path: Path, monkeypatch
+) -> None:
+    site_path, bundle, _, current = _prune_inputs(tmp_path)
+    fake = FakeGrafanaClient(current)
+    monkeypatch.setattr(cli, "GrafanaClient", lambda url, token: fake)
+
+    result = runner.invoke(
+        cli.app,
+        ["deploy", str(site_path), "--artifact-dir", str(bundle.directory)],
+        env={
+            "GRAFANA_URL": "https://grafana.example",
+            "GRAFANA_TOKEN": "secret",
+            "ALERT_PROXY_URL": "https://proxy.example",
+        },
+    )
+
+    assert result.exit_code == 1
+    assert "ALERT_ATTESTATION_KEY must be set" in result.output
+    assert fake.applied == []
 
 
 def test_deploy_fails_and_records_post_deployment_query_verification(
