@@ -144,12 +144,59 @@ stages:
             displayName: Publish live comparison plan
             condition: and(succeeded(), eq(variables['PLAN_ENABLED'], 'true'))
 
+  - stage: Drift
+    displayName: Detect managed Grafana drift
+    dependsOn: Build
+    condition: >-
+      and(succeeded(),
+          eq(variables['DRIFT_ENABLED'], 'true'),
+          ne(variables['Build.Reason'], 'PullRequest'),
+          or(eq(variables['Build.Reason'], 'Schedule'),
+             ne(variables['DEPLOY_ENABLED'], 'true')))
+    jobs:
+      - job: DetectDrift
+        displayName: Compare Git with live ${{ parameters.site }} alerts
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+
+          - download: current
+            artifact: rendered-alerts
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.10"
+            displayName: Use Python 3.10
+
+          - script: >-
+              python -m pip install --upgrade pip &&
+              python -m pip install .
+            displayName: Install drift CLI
+
+          - script: >-
+              grafana-alerts drift
+              "sites/${{ parameters.site }}.yaml"
+              --artifact-dir "$(Pipeline.Workspace)/rendered-alerts"
+              --output "$(Agent.TempDirectory)/drift-report"
+              --fail-on-drift
+            displayName: Detect managed alert drift
+            env:
+              GRAFANA_URL: $(GRAFANA_URL)
+              GRAFANA_TOKEN: $(GRAFANA_TOKEN)
+
+          - publish: $(Agent.TempDirectory)/drift-report
+            artifact: grafana-drift-report
+            displayName: Publish drift report
+            condition: always()
+
   - stage: Deploy
     displayName: Deploy reviewed artifact
     dependsOn: Build
     condition: >-
       and(succeeded(),
           eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+          ne(variables['Build.Reason'], 'Schedule'),
           eq(variables['DEPLOY_ENABLED'], 'true'))
     jobs:
       - deployment: DeployAlerts

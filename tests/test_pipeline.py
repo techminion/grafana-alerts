@@ -47,3 +47,14 @@ def test_pipeline_routes_every_mutation_through_proxy() -> None:
 
     assert pipeline.count("ALERT_PROXY_URL: $(ALERT_PROXY_URL)") == 3
     assert pipeline.count("ALERT_ATTESTATION_KEY: $(ALERT_ATTESTATION_KEY)") == 3
+
+
+def test_pipeline_has_opt_in_read_only_drift_stage() -> None:
+    pipeline = Path("azure-pipelines.yml").read_text(encoding="utf-8")
+
+    assert "stage: Drift" in pipeline
+    assert "DRIFT_ENABLED" in pipeline
+    assert "grafana-alerts drift" in pipeline
+    assert "--fail-on-drift" in pipeline
+    assert "artifact: grafana-drift-report" in pipeline
+    assert "ne(variables['Build.Reason'], 'Schedule')" in pipeline
