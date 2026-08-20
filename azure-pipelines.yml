@@ -201,6 +201,7 @@ stages:
                       displayName: Deploy and post-verify reviewed artifact
                       condition: ne(variables['PRUNE_ENABLED'], 'true')
                       env:
+                        ALERT_ATTESTATION_KEY: $(ALERT_ATTESTATION_KEY)
                         ALERT_PROXY_URL: $(ALERT_PROXY_URL)
                         GRAFANA_URL: $(GRAFANA_URL)
                         GRAFANA_TOKEN: $(GRAFANA_TOKEN)
@@ -219,6 +220,7 @@ stages:
                       displayName: Deploy, prune, and post-verify artifact
                       condition: eq(variables['PRUNE_ENABLED'], 'true')
                       env:
+                        ALERT_ATTESTATION_KEY: $(ALERT_ATTESTATION_KEY)
                         ALERT_PROXY_URL: $(ALERT_PROXY_URL)
                         GRAFANA_URL: $(GRAFANA_URL)
                         GRAFANA_TOKEN: $(GRAFANA_TOKEN)
@@ -239,6 +241,7 @@ stages:
                         --receipt "$(Agent.TempDirectory)/deployment-receipt/deployment-receipt.json"
                       displayName: Execute and post-verify reviewed rollback
                       env:
+                        ALERT_ATTESTATION_KEY: $(ALERT_ATTESTATION_KEY)
                         ALERT_PROXY_URL: $(ALERT_PROXY_URL)
                         GRAFANA_URL: $(GRAFANA_URL)
                         GRAFANA_TOKEN: $(GRAFANA_TOKEN)

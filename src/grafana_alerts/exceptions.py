@@ -6,6 +6,10 @@ class ConfigError(AlertManagerError):
     """Raised when a site file or rendered rule group is invalid."""
 
 
+class AuditConflictError(ConfigError):
+    """Raised when an immutable audit identifier has already been used."""
+
+
 class GrafanaApiError(AlertManagerError):
     """Raised when Grafana returns an unsuccessful response."""
 

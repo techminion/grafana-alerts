@@ -46,3 +46,4 @@ def test_pipeline_routes_every_mutation_through_proxy() -> None:
     pipeline = Path("azure-pipelines.yml").read_text(encoding="utf-8")
 
     assert pipeline.count("ALERT_PROXY_URL: $(ALERT_PROXY_URL)") == 3
+    assert pipeline.count("ALERT_ATTESTATION_KEY: $(ALERT_ATTESTATION_KEY)") == 3

@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 from urllib.parse import quote
 
 import requests
 
+from grafana_alerts.attestation import create_mutation_attestation
+from grafana_alerts.deployment_plan import live_group_sha256
 from grafana_alerts.exceptions import ProxyApiError
 from grafana_alerts.grafana import ApplyResult, DeleteResult
+
+_SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
 class ProxyWriteClient:
@@ -20,6 +25,7 @@ class ProxyWriteClient:
         org_id: int,
         folder_uid: str,
         artifact_manifest_sha256: str,
+        attestation_key: str,
         *,
         pipeline: dict[str, str] | None = None,
         timeout: float = 30.0,
@@ -29,12 +35,15 @@ class ProxyWriteClient:
             raise ValueError("base_url cannot be empty")
         if not token.strip():
             raise ValueError("token cannot be empty")
+        if len(attestation_key.encode()) < 32:
+            raise ValueError("attestation_key must be at least 32 bytes")
         self.base_url = base_url.rstrip("/")
         self.token = token
         self.site_key = site_key
         self.org_id = org_id
         self.folder_uid = folder_uid
         self.artifact_manifest_sha256 = artifact_manifest_sha256
+        self.attestation_key = attestation_key
         self.pipeline = pipeline or {}
         self.timeout = timeout
         self.session = session or requests.Session()
@@ -76,12 +85,33 @@ class ProxyWriteClient:
             raise ProxyApiError("Deployment proxy returned an unexpected response")
         return body
 
-    def _context(self) -> dict[str, Any]:
+    def _attestation(
+        self,
+        group: str,
+        operation: str,
+        *,
+        payload_sha256: str | None = None,
+        expected_before_sha256: str | None = None,
+    ) -> dict[str, Any]:
+        return create_mutation_attestation(
+            self.attestation_key,
+            site=self.site_key,
+            org_id=self.org_id,
+            folder_uid=self.folder_uid,
+            group=group,
+            operation=operation,
+            artifact_manifest_sha256=self.artifact_manifest_sha256,
+            payload_sha256=payload_sha256,
+            expected_before_sha256=expected_before_sha256,
+        )
+
+    def _context(self, attestation: dict[str, Any]) -> dict[str, Any]:
         return {
             "orgId": self.org_id,
             "folderUid": self.folder_uid,
             "artifactManifestSha256": self.artifact_manifest_sha256,
             "pipeline": self.pipeline,
+            "attestation": attestation,
         }
 
     @staticmethod
@@ -106,7 +136,13 @@ class ProxyWriteClient:
     ) -> ApplyResult:
         if folder_uid != self.folder_uid:
             raise ProxyApiError("Proxy target folder does not match the reviewed site")
-        request = self._context()
+        request = self._context(
+            self._attestation(
+                group,
+                "apply",
+                payload_sha256=live_group_sha256(payload),
+            )
+        )
         request["payload"] = payload
         path = (
             f"/v1/sites/{quote(self.site_key, safe='')}/groups/"
@@ -117,14 +153,29 @@ class ProxyWriteClient:
         )
         return ApplyResult(group, status, audit_id, audit_sha256)
 
-    def delete_group(self, folder_uid: str, group: str) -> DeleteResult:
+    def delete_group(
+        self, folder_uid: str, group: str, expected_before_sha256: str
+    ) -> DeleteResult:
         if folder_uid != self.folder_uid:
             raise ProxyApiError("Proxy target folder does not match the reviewed site")
+        if not _SHA256.fullmatch(expected_before_sha256):
+            raise ProxyApiError("Delete requires the reviewed live before-state fingerprint")
         path = (
             f"/v1/sites/{quote(self.site_key, safe='')}/groups/"
             f"{quote(group, safe='')}:delete"
         )
         status, audit_id, audit_sha256 = self._result(
-            self._request("POST", path, self._context()), group
+            self._request(
+                "POST",
+                path,
+                self._context(
+                    self._attestation(
+                        group,
+                        "delete",
+                        expected_before_sha256=expected_before_sha256,
+                    )
+                ),
+            ),
+            group,
         )
         return DeleteResult(group, status, audit_id, audit_sha256)

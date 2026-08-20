@@ -13,6 +13,7 @@ def _client() -> ProxyWriteClient:
         1,
         "folder/uid",
         "a" * 64,
+        "attestation-secret-at-least-32-bytes",
         pipeline={"buildId": "41"},
     )
 
@@ -41,6 +42,8 @@ def test_proxy_client_forwards_grafana_token_and_audit_result() -> None:
     body = request.body.decode() if isinstance(request.body, bytes) else request.body
     assert '"orgId": 1' in body
     assert "grafanaUrl" not in body
+    assert "attestation-secret-at-least-32-bytes" not in body
+    assert '"operation": "apply"' in body
 
 
 @responses.activate
@@ -56,7 +59,7 @@ def test_proxy_client_uses_explicit_delete_action() -> None:
         status=200,
     )
 
-    result = _client().delete_group("folder/uid", "retired")
+    result = _client().delete_group("folder/uid", "retired", "d" * 64)
 
     assert result.status_code == 204
     assert responses.calls[0].request.method == "POST"
@@ -97,4 +100,4 @@ def test_proxy_client_preserves_failed_mutation_audit_reference() -> None:
 
 def test_proxy_client_rejects_folder_substitution() -> None:
     with pytest.raises(ProxyApiError, match="folder"):
-        _client().delete_group("other-folder", "retired")
+        _client().delete_group("other-folder", "retired", "d" * 64)
